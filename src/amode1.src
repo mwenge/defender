@@ -11,35 +11,35 @@ CREDV   EQU    BAITV+2
 SCANV   EQU    CREDV+2
 ELECV   EQU    SCANV+2
 HOFV    EQU    $C0FD
-INIT$V  EQU    HOFV+2
-HALLDV  EQU    INIT$V+2
+INITSSV  EQU    HOFV+2
+HALLDV  EQU    INITSSV+2
 HALENV  EQU    HALLDV+2
 
 *  STILOB PICT,X,Y  CREATES AN OBJECT WITH NO VELOCITY AT X,Y
-STILOB  MACRO  \0,\1,\2
+STILOB  MACRO  \1,\2,\3
         JSR    GETOB            ;GET AN OBJECT
         LDD    #0               ;VELOCITY
         STD    OXV,X
         STD    OYV,X
-        LDD    #\1              ;X
+        LDD    #\2              ;X
         STD    OX16,X
-        LDD    #\2
+        LDD    #\3
         STD    OY16,X
-        LDD    #\0              ;PICTURE
+        LDD    #\1              ;PICTURE
         STD    OPICT,X
         STX    OPTR             ;AND APPEND TO LIST
         ENDM 
 
-NAPP    MACRO  \0,\1
-        LDA    #\0
-        LDX    #\1
+NAPP    MACRO  \1,\2
+        LDA    #\1
+        LDX    #\2
         JMP    SLEEPP
         ENDM 
 * BSO BONER DOES NOT ALLOW MACRO AND SYMBOL FOR LJSR SO CHANGED TO MLJSR
-MLJSR   MACRO  \0,\1
+MLJSR   MACRO  \1,\2
         JSR    LJSRV
-        FDB    \1
-        FCB    \0
+        FDB    \2
+        FCB    \1
         ENDM 
 
 *SAM EQUATES
@@ -49,15 +49,15 @@ PNUMB   EQU    INITS+6
 INITDS  EQU    PNUMB+2
 SCOREN  EQU    INITDS+4
 
-        ORG    THTAB
+        ORG    $A162       ; Fixme: was ORG THTAB
 *
 ***  SAMRAM
 *
 
 TEMPA   RMB    1
 TEMPB   RMB    1
-XTEMP$  RMB    2
-CURSR$  RMB    2
+XTEMPS  RMB    2
+CURSRS  RMB    2
 CUREND  RMB    2
 LGOFLG  RMB    1
 LGOPTR  RMB    2
@@ -111,6 +111,8 @@ YSHIP   EQU    $5000
 AMTYPE  EQU    0
 
         ORG    $C000
+        PUT    $2000
+
         JMP    HALLOF           ;VECTORS
         JMP    SCNR
 *
@@ -126,9 +128,9 @@ HALLOF  JSR    GNCIDE           ;KILL ALL PROCESSES
         STA    ICREDF           ;CLEAR CREDIT INCREASE FLAG
         STA    ENTFLG           ;CLEAR ENTRY FLAG
         LDA    PWRFLG           ;CHECK FOR POWER ON INITIALIZATION
-        LBEQ   AMODE$           ;YES?, SKIP TO WILLI PAGE
+        LBEQ   AMODES           ;YES?, SKIP TO WILLI PAGE
         NEWP   CREDS,AMTYPE     ;TURN ON CREDITS
-        LDY    #.P1SCR          ;START WITH PLAYER 1
+        LDY    #P1SCR           ;START WITH PLAYER 1
         LDA    #1
 HALL1   STA    PNUMB            ;PLAYER NUMBER
         STY    PSCORE           ;PLAYER SCORE ADDRESS
@@ -145,19 +147,19 @@ HALL1   STA    PNUMB            ;PLAYER NUMBER
 HALL1A  JSR    P2SW
 HALL1B  LDB    #$85             ;LIGHT BLUE LETTERS
         STB    PCRAM+1
-        LDA    #$FE             ;TODAYS SOUND - PHANTOM
+        LDA    #$3E             ;TODAYS SOUND - PHANTOM
         LDX    #THSTAB          ;TODAYS TOP SCORE
         JSR    CPXCY            ;COMPARE
         BHS    HALL2            ;NOT THE BEST?
-        LDA    #$FD             ;HIGH SCORE SOUND - TOCCATA
+        LDA    #$3D             ;HIGH SCORE SOUND - TOCCATA
 HALL2   LDX    #$CC02           ;SOUND PIAS
-        LDB    #$FF             ;CLEAR LINES
+        LDB    #$3F             ;CLEAR LINES
         JSR    STBXBV
-        LDB    #$E4             ;SELECT ORGAN
+        LDB    #$24             ;SELECT ORGAN
         JSR    STBXBV
-HALL3   DECB     DELAY
+HALL3   DECB                    ;DELAY
         BNE    HALL3
-        LDB    #$FF             ;CLEAR LINES
+        LDB    #$3F             ;CLEAR LINES
         JSR    STBXBV
         TFR    A,B
         JSR    STBXBV           ;PLAY SOUND
@@ -219,7 +221,7 @@ HALL6   JSR    GNCIDE           ;KILL PROCESSES
         LDX    #CRHSTD+12*6     ;ALL TIME SEVENTH SCORE
         LDU    #CRHSTD-12       ;ABOVE ALL TIME TOP SCORE
         JSR    HOFAS            ;ADD SCORE TO LIST
-HALL12  LDY    #.P2SCR          ;PLAYER TWO
+HALL12  LDY    #P2SCR          ;PLAYER TWO
         LDA    PNUMB
         INCA 
         CMPA   #3               ;CHECK IF DONE
@@ -244,7 +246,7 @@ CPXY1   PULS   X,D,PC           ;RESTORE REGISTERS, RETURN
 HOFIN   LDX    #$46AC           ;TOP LEFT OF INITIALS
         LDD    #$1408           ;SIZE OF INITIALS
         JSR    BLKCLR           ;ERASE BLOCK
-        LDU    #INIT$V          ;INITIALS TEXT VECTOR
+        LDU    #INITSSV          ;INITIALS TEXT VECTOR
         MLJSR  2,WTEXTB         ;WRITE TO SCREEN
         RTS  
 *
@@ -270,13 +272,13 @@ HOFUL3  STU    D,X              ;DRAW UNDER LINE
 *HALL OF FAME -  ADD SCORE AND INITIALS  X=BOTTOM OF LIST
 *    TO LIST    U=TOP OF LIST
 *
-HOFAS   STU    XTEMP$           ;SAVE TOP OF LIST ADDRESS
+HOFAS   STU    XTEMPS           ;SAVE TOP OF LIST ADDRESS
         LDY    PSCORE           ;GET PLAYER SCORE ADDRESS
 HOFAS1  BSR    CPXCY            ;COMPARE
         BHS    HOFAS2
         BSR    HOFMD            ;MOVE SCORE DOWN ONE STEP
         LEAX   -12,X            ;NEXT SCORE UP
-        CMPX   XTEMP$           ;ABOVE TOP SCORE?
+        CMPX   XTEMPS           ;ABOVE TOP SCORE?
         BHI    HOFAS1
 HOFAS2  LEAX   12,X             ;ONE STEP DOWN
         LDD    1,Y              ;STORE SCORE
@@ -316,7 +318,7 @@ HOFBL   LDA    PCRAM+$D         ;GET BLINKING COLOR
         BNE    HOFBL1           ;ON?
         LDA    PCRAM+1          ;MAKE SAME AS NORMAL COLOR
         BRA    HOFBL2
-HOFBL1  CLRA     TURN             ;OFF
+HOFBL1  CLRA                     ;TURN OFF
 HOFBL2  STA    PCRAM+$D         ;CHANGE COLOR
         NAPP   15,HOFBL         ;BLINK PERIOD
 *
@@ -355,7 +357,7 @@ HOFUD6  CMPA   #$5B             ;TOO HIGH?
 HOFUD7  STA    ,X               ;SAVE NEW INITIAL
         JSR    HOFIN            ;UPDATE INITIALS DISPLAY
         LDA    UDDEL            ;GET LAST DELAY
-        LSRA     DECAY            ;IT
+        LSRA                    ;DECAY IT
         ADDA   #5               ;TOP SPEED LIMIT
         STA    UDDEL            ;SAVE NEW DELAY
         STA    UDCNT            ;INITIALIZE COUNTER
@@ -370,7 +372,7 @@ HOFUD9  STA    INIDIR           ;NEW DIRECTION
 *
 *CHECK BYTE
 *
-        FDB    $FFFF
+        FDB    $DEFF
 *
 *HALL OF FAME DISPLAY
 *
@@ -404,12 +406,12 @@ HALD2   DECA
         LDX    #$1886           ;SCREEN ADDRESS
         STX    SPOINT
         LDX    #THSTAB          ;TODAYS GREATEST TABLE ADDRESS
-        STX    XTEMP$
+        STX    XTEMPS
         BSR    HALDT            ;DISPLAY TABLE
         LDX    #$5986           ;SCREEN ADDRESS
         STX    SPOINT
         LDX    #CRHSTD          ;ALL TIME GREATEST TABLE ADDRESS
-        STX    XTEMP$
+        STX    XTEMPS
         BSR    HALDT            ;DISPLAY TABLE
         LDA    #$3F             ;YELLOW "DEFENDER"
         STA    PCRAM+$C
@@ -433,22 +435,22 @@ HALD3   TST    ICREDF           ;CHECK FOR INCREASE IN CREDITS
 HALD4   BRA    LEDRET           ;ON TO INSTUCTIONS
 *
 *HALL OF FAME DISPLAY ONE TABLE  U=DATA LINE MESSAGE VECTOR
-*  SPOINT=SCREEN ADDRESS  XTEMP$=TABLE DATA ADDRESS
+*  SPOINT=SCREEN ADDRESS  XTEMPS=TABLE DATA ADDRESS
 *
 HALDT   LDA    #$31             ;INITIALIZE RANK NUMBER
         STA    PNUMB
-HALDT1  CLRA     CLEAR            ;LEADING ZERO NOT FLAG
+HALDT1  CLRA                    ;CLEAR LEADING ZERO NOT FLAG
         LDY    #SCOREN          ;SCORE PSEUDO WORD ADDRESS
-        LDX    XTEMP$           ;GET TABLE DATA POINTER
+        LDX    XTEMPS           ;GET TABLE DATA POINTER
 HALDT2  JSR    LDBXBV           ;GET SCORE NIBBLE
         LEAX   1,X              ;ADVANCE DATA POINTER
         ANDB   #$F              ;REMOVE GARBAGE
         BNE    HALDT3           ;NOT ZERO?, DISPLAY
-        TSTA     CHECK            ;LEADING ZERO NOT FLAG
+        TSTA                    ;CHECK LEADING ZERO NOT FLAG
         BNE    HALDT3           ;SET?, DISPLAY ZERO
         LDB    #$40             ;REPLACE LEADING ZERO WITH SPACE
         BRA    HALDT4           ;DISPLAY
-HALDT3  INCA     SET              ;LEADING ZERO FLAG NOT FLAG
+HALDT3  INCA                    ;SET LEADING ZERO FLAG NOT FLAG
         ADDB   #$30             ;CHANGE TO ASCII NUMBER
 HALDT4  STB    ,Y+              ;STORE IN PSEUDO WORD
         CMPY   #SCOREN+6        ;CHECK IF SCORE DONE?
@@ -457,7 +459,7 @@ HALDT4  STB    ,Y+              ;STORE IN PSEUDO WORD
         STD    INITDS           ;STORE IN PSEUDO WORD
         JSR    RCMOSA           ;GET LAST INITIAL
         STA    INITDS+2         ;STORE IN PSEUDO WORD
-        STX    XTEMP$           ;SAVE DATA POINTER
+        STX    XTEMPS           ;SAVE DATA POINTER
         LDX    SPOINT           ;GET SCREEN ADDRESS
         MLJSR  2,WTEXTB         ;WRITE DATA LINE TO SCREEN
         LEAX   10,X             ;MOVE SCREEN POINTER ONE LINE DOWN
@@ -481,9 +483,9 @@ LEDRET  JSR    GNCIDE           ;KILL ANY EXCESS
         JSR    BORDER
         LDX    #TEXTAB+2
         STX    TEXPTR
-        NEWP   COLR,AMTYPE
-        NEWP   CBOMB,AMTYPE
-        NEWP   TIECOL,AMTYPE
+        NEWP   COLR,AMTYPE     
+        NEWP   CBOMB,AMTYPE   
+        NEWP   TIECOL,AMTYPE 
         NEWP   SCPROC,AMTYPE
         NEWP   TEXTP,AMTYPE
         STILOB ASTP1,XMAN,YMAN  ;ASTRONAUT
@@ -516,7 +518,7 @@ AMODE1  LDD    #$FF50           ;GOING UP!
         LDX    MANPTR
         STD    OYV,X            ;HIS TOO.
         NAPP   $A0,AMODE2       ;WAIT FOR HIM TO BE IN LINE WITH THE LASER.
-AMODE2  NEWP   LASR$,AMTYPE
+AMODE2  NEWP   LASRS,AMTYPE
         STX    LASPRC           ;SAVE NEW PROCESS ID.
         NAPP   $15,AMODE3
 
@@ -538,7 +540,7 @@ SCINIT  LDA    #$FF
 KLASUB  LDX    LASPRC           ;TIME TO KILL THE LASER
         LDU    LSTATE           ;KILL A LASER CODE
         CLRA 
-AMODE6  STA    0,U
+AMODE6  FCB    $A7,$C4          ;Fixme was: STA    0,U
         LEAU   $100,U
         CMPU   PD,X
         BLS    AMODE6
@@ -560,7 +562,7 @@ AMODE3  BSR    KLASUB
         STD    OYV,X            ;FOR EUGENE.
 AMODE4  LDX    MANPTR           ;GET THE MANS PTR
         LDD    OYV,X            ;GET HIS VELOCITY
-        ADDD   #0008            ;MAKE IT FASTER
+        ADDD   #8            ;MAKE IT FASTER
         STD    OYV,X            ;AND PUT IT BACK.
         DEC    MANFRF           ;ONE LESS FRAME
         BEQ    AMODE5
@@ -634,7 +636,7 @@ AMOD12  JSR    GETOB            ;OBJECT PLEASE*****************BSO BONER***
         STU    OTABPT           ;SAVE OUR TABLE POINTER
         STX    ENEMYP           ;SAVE THE GUYS POINTER.
         NAPP   $5F,AMOD10       ;WAIT FOR IN LINE WITH LASER
-AMOD10  NEWP   LASR$,AMTYPE
+AMOD10  NEWP   LASRS,AMTYPE
         STX    LASPRC           ;SAVE THE PROCESS POINTER.
         NAPP   $17,AMOD11
 AMOD11  JSR    KLASUB           ;TRASH THE LASER
@@ -661,9 +663,9 @@ BMODE3  LDU    OTABPT
         CMPU   #OTABND          ;END
         LBNE   AMOD12
         NAPP   $FF,AMOD13
-AMOD13  NAPP   $FF,AMODE$       ;DO IT AGAIN!
+AMOD13  NAPP   $FF,AMODES       ;DO IT AGAIN!
 
-LASR$   LDX    SHIPTR           ;GET SHIP
+LASRS   LDX    SHIPTR           ;GET SHIP
         LDX    OBJX,X           ;GET SCREEN COORDS
 LASRR   LEAX   $704,X
         STX    PD,U
@@ -712,7 +714,7 @@ TEXTP2  LDY    TEXTMP           ;GET IT BACK
 *
 *WILLIAMS PAGE
 *
-AMODE$  JSR    GNCIDE
+AMODES  JSR    GNCIDE
         CLR    ICREDF           ;CLEAR CREDIT INCREASE FLAG
         LDA    #$FB
         STA    STATUS
@@ -720,7 +722,7 @@ AMODE$  JSR    GNCIDE
         CLR    MESPT
         LDD    #$FFFF
         STD    NUMBER
-        NEWP   COLR,AMTYPE
+        NEWP   COLR,AMTYPE 
         NEWP   TIECOL,AMTYPE
         LDA    #$3F
         STA    PCRAM+$C
@@ -747,25 +749,25 @@ LOGO1   LDA    ,Y+
         DECA 
         BNE    LOGO10           ;QUIT
         LDD    ,Y++             ;HYPER
-        STD    CURSR$
+        STD    CURSRS
         CLRA 
         BRA    LOGO7
 *DATA
-LOGO3   ASLA     MOVE             ;CURSER
+LOGO3   ASLA                    ;MOVE CURSER
         BCC    LOGO4
-        DEC    CURSR$
+        DEC    CURSRS
 LOGO4   ASLA 
         BCC    LOGO5
-        INC    CURSR$
+        INC    CURSRS
 LOGO5   ASLA 
         BCC    LOGO6
-        DEC    CURSR$+1
+        DEC    CURSRS+1
 LOGO6   ASLA 
         BCC    LOGO7
-        INC    CURSR$+1
+        INC    CURSRS+1
 LOGO7   STA    TEMPA            ;SAVE DATA
 *WRITE TO SCEEN
-        LDD    CURSR$
+        LDD    CURSRS
         LSRA 
         TFR    D,X
         LDB    ,X               ;SAVE OTHER PIXEL
@@ -785,11 +787,11 @@ LOGO9   STB    ,X
 LOGO10  STX    CUREND           ;SAVE END OF CURSER
         LDA    #3               ;SLOW?
         CMPA   LGOFLG
-        BNE    LOGO1$           ;NOPE
+        BNE    LOGO1S           ;NOPE
         LDA    #10              ;NOPE MAKE FAST
         STA    LGOFLG
         NEWP   PRES,AMTYPE      ;CREATE THE NEXT ONE.
-LOGO1$  LDX    #LGOTAB
+LOGO1S  LDX    #LGOTAB
         STX    LGOPTR
         BRA    LOGO0            ;CONTINUE
 *
@@ -805,8 +807,8 @@ PRES1   LDX    #$3258
 *
 *DEFENDER
 *
-DEFEND  NAPP   $30,DEFEN$       ;START APPEARS
-DEFEN$  LDD    #DEFPIC          ;INITIALIZE DESCRIPTER POINTER
+DEFEND  NAPP   $30,DEFENS       ;START APPEARS
+DEFENS  LDD    #DEFPIC          ;INITIALIZE DESCRIPTER POINTER
         STD    DEFSPT
         LDD    #DEFBLK          ;INITIALIZE DATA POINTER
         STD    DEFDPT
@@ -856,13 +858,13 @@ COPYRT  LDU    CUREND           ;GET END OF "WILLIAMS" CURSER
         LDY    #CPRTAB          ;TABLE START
         LDX    #$3BD0           ;TOP LEFT
 CPR1    LDD    ,Y++
-        STD    XTEMP$           ;SAVE DATA
+        STD    XTEMPS           ;SAVE DATA
         LDA    #1               ;BIT POINTER
 CPR2    CLRB 
-        BITA   XTEMP$
+        BITA   XTEMPS
         BEQ    CPR3
         LDB    #$10
-CPR3    BITA   XTEMP$+1
+CPR3    BITA   XTEMPS+1
         BEQ    CPR4
         ORB    #1
 CPR4    STB    ,X+
@@ -875,11 +877,11 @@ CPR4    STB    ,X+
         LDX    #PCRAM           ;GET COLOR ZERO ADDRESS
         LDB    LOGO8+1          ;GET WILLIAMS COLOR NUMBER
         LDA    B,X              ;GET WILLIAMS COLOR
-        COMA     FULL             ;RED PRESENT?
+        COMA                    ;FULL RED PRESENT?
         ANDA   #7
         BNE    WILCK1           ;NO?, BOGUS
-        LDX    #WCURS!.$C35A    ;CONFUSION
-        LDD    #WCURS!.$3CA5    ;MORE CONFUSION
+        LDX    #WCURS&$C35A    ;CONFUSION
+        LDD    #WCURS&$3CA5    ;MORE CONFUSION
         STU    D,X              ;TRANSFER CURSER
 WILCK1  LDA    #1               ;SET POWER FLAG
         STA    PWRFLG
@@ -929,10 +931,10 @@ DEFX2   BITA   #$C              ;DIRECT OR EXTENDED
         BNE    DEFX3
 *EXTENDED
         ADDA   LEN              ;INCLUDE UPPER BITS
-        ASLA     MULT             ;BY 4
+        ASLA                    ;MULT BY 4
         ASLA 
         STA    LEN              ;SAVE LENGTH
-        RTS      NEXT             ;NIBBLE
+        RTS                     ;NEXT NIBBLE
 *DIRECT
 DEFX3   PSHS   A
         ANDA   #3               ;EXTRACT LENGTH OF LINE
@@ -982,7 +984,7 @@ CREDS   LDB    CREDIT           ;GET CREDITS
 CREDS1  LDU    #CREDV           ;MESSAGE VECTOR
         LDX    #$28E5           ;SCREEN ADDRESS
         MLJSR  2,WTEXTB         ;WRITE TO SCREEN
-        CLRA     NO               ;HIGH
+        CLRA                    ;NO HIGH
         LDX    #$48E5           ;PLACE FOR NUMBERS
         MLJSR  2,WNUMBB         ;WRITE IT
 CREDS2  NAPP   16,CREDS         ;SLEEP 16
@@ -1198,7 +1200,7 @@ MT1     LDD    BGL              ;CALC SCANL
         SUBD   #$8000-(150*32)
         STD    XTEMP
         LSRA 
-        LSRA     GET              ;6 BITS
+        LSRA                    ;GET 6 BITS
         LDU    #MTERR
         LDB    #3
         MUL  
@@ -1206,7 +1208,7 @@ MT1     LDD    BGL              ;CALC SCANL
         LDA    STATUS
         BITA   #2               ;NO TERRAIN???
         BNE    MTX              ;NONE
-        LDA    #SCANER!>8
+        LDA    #SCANER>>8
         LDY    #STETAB          ;ERASE TABLE
 MTLP    LDX    #0
         STX    [,Y]             ;OFF OLD
@@ -1220,7 +1222,7 @@ MTLP    LDX    #0
         STD    ,Y
         STX    [,Y++]
         INCA 
-        CMPA   #(SCANER!>8)+64
+        CMPA   #(SCANER>>8)+64
         BNE    MTLP
 *SCANNER BEZEL
 MTX     LDX    #SCANH+$4C01
@@ -1259,7 +1261,7 @@ MTX     LDX    #SCANH+$4C01
 *BLIP SCAN SUBROUTINE
 SCNR10  LDD    OX16,X           ;FIND OFFSET
         SUBD   XTEMP            ;SUBTRACT SCANNER LEFT
-SCNR2   LSRA     SHIFT            ;DOWN TO 6 BITS
+SCNR2   LSRA                    ;SHIFT DOWN TO 6 BITS
         LSRA 
         LDB    OY16,X
         LSRB 
@@ -1308,5 +1310,6 @@ MTERR   FCB    $25,$70,$07,$26,$77,$00,$26,$07,$70,$24,$07,$70
         FCB    $24,$07,$70,$23,$77,$00,$24,$77,$00,$22,$07,$70
         FCB    $23,$70,$07,$22,$07,$70,$21,$70,$07,$23,$70,$07
         ORG    $CF00
+        PUT    $2F00
         FCB    $C3              ;CHECKBYTE
         END  

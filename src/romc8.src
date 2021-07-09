@@ -1,4 +1,4 @@
-        TTL    ROMC8            ;- DIAG ROM UPPER HALF - 12/22/80
+*       TTL    ROMC8            ;- DIAG ROM UPPER HALF - 12/22/80
 *
 * AUDIT / GAME ADJUSTS
 *
@@ -26,11 +26,11 @@ AUDITG  JSR    WATCHD           ;RESET DOGGY
         JSR    VWTEXT           ;WRITE IT OUT
         CLR    TEMP1A           ;ZERO SCAN DELAY TIME
         LDY    #IAUD2           ;POINT TO PART 2
-        JSR    VOPER$           ;TRANSFER THEM TO THE BOTTOM
+        JSR    VOPERS           ;TRANSFER THEM TO THE BOTTOM
         JSR    WATCHD           ;RESET DOGGY
         LDA    #$20             ;FOR SPACE CODE
         TFR    A,B
-        DECB   DO               ;ONLY 31
+        DECB                    ;DO ONLY 31
         LEAX   ,S               ;GET DESTIN
 CLRBU   STA    ,X+
         DECB 
@@ -67,7 +67,7 @@ AUDIT2  JSR    ALTER            ;SEE IF ANY CHANGES!
         BNE    AUDIT3           ;NO
         LDX    #COINSL          ;POINT TO IT
         JSR    RCBV
-        TSTB   WAS              ;IT 0
+        TSTB                    ;WAS IT 0
         BEQ    AUDIT3           ;YES, SKIP
         CMPB   #8               ;WAS IT 8
         BHI    AUDIT4           ;USE MODE 1
@@ -78,14 +78,14 @@ AUDIT4  LDX    #COINSL          ;POINT TO SELECT
         LDB    #$01             ;GET COIN MODE 1
         JSR    WCBV
         JSR    COININ           ;TRANSFER 6 BYTES
-        CLRB     NOW              ;SET SELECT TO 0
+        CLRB                    ;NOW SET SELECT TO 0
         PULS   X                ;AT SELECT
         JSR    WCBV
 AUDIT3  BSR    DISAUD           ;GO SHOW UPDATES
 AUDT3A  LDA    TEMP1A
         CMPA   #6               ;CHECK IF ALREADY SCANNING
         BEQ    AUDT3D           ;CONTINUE SCANNING
-        TSTA     CHECK            ;IF SECOND DELAY
+        TSTA                    ;CHECK IF SECOND DELAY
         BNE    AUDT3B           ;START SCANNING
         LDA    #100             ;FIRST DELAY MAKE NEXT DELAY LONG
         BRA    AUDT3C
@@ -95,7 +95,7 @@ AUDT3C  STA    TEMP1A           ;SAVE RATE
         INCA 
         LDB    #$FF             ;INITIALIZE DEBOUNCE SHIFT REGISTER
 AUDT3D  JSR    DELY10           ;10 MILLISECOND DELAY
-        DECA     COUNT
+        DECA                    ;COUNT
         BEQ    AUDT3G           ;DONE?
         LDX    #$CC00           ;CHECK FOR STOP CHANGES
         PSHS   B                ;SAVE SHIFT REGISTER
@@ -106,7 +106,7 @@ AUDT3D  JSR    DELY10           ;10 MILLISECOND DELAY
         BRA    AUDT3F
 AUDT3E  ORCC   #1
 AUDT3F  PULS   B                ;GET SHIFT REGISTER
-        RORB     SHIFT
+        RORB                    ;SHIFT
         BNE    AUDT3D           ;NOT DEFINITELY OPEN?, CONTINUE DELAY
         CLR    TEMP1A           ;DEFINITELY OPEN - ZERO SCAN DELAY TIME
 AUDT3G  CLR    TEMP1B           ;WE DID IT, DON'T REPEAT TILL NEXT CHANGE
@@ -120,16 +120,16 @@ DISAUD  LEAY   2,S              ;POINT TO START FOR ERASE
         JSR    CLRBUF           ;MAKE IT NULL
 * NOW GET FUNCTION #
         LDA    TEMP1C           ;GET IT
-        INCA     MAKE             ;IT 1-32
+        INCA                    ;MAKE IT 1-32
         JSR    BINBCD           ;MAKE IT BCD
         JSR    ASCII            ;MAKE IT ASCII
         STD    0,X              ;SAVE IN BUFFER
 * GET MESSAGE FOR SCREEN
         LDB    TEMP1C           ;GET FUNCTION NUMBER
-        ASLB     X2
-        ASLB     X4               ;PER DISPLAY
+        ASLB                    ;X2
+        ASLB                    ;X4 PER DISPLAY
         LDX    #MSGAUD          ;POINT TO AUDIT MESSAGES
-        ABX      ADD              ;OFFSET
+        ABX                     ;ADD OFFSET
         LDY    0,X              ;GET SOURCE POINTER
         LDU    2,X              ;GET CHAR/ADDRESS CHARACTERIZER
         LEAX   14,S             ;RESET TO VALID AREA
@@ -142,11 +142,11 @@ DISAU3  LDA    ,Y+              ;GET SOURCE
 DISAU2  TFR    U,D              ;MOVE TO A/B PAIR
         LEAU   2,S              ;POINT TO START
         LDX    #CMOS            ;POINT TO START
-        ABX      ADD              ;TO GET CORRECT START ADDRESS
+        ABX                     ;ADD TO GET CORRECT START ADDRESS
         JSR    RCBV             ;GET DATA IN B
         PSHS   D                ;SAVE FOR A BIT
         LDB    TEMP1C           ;GET FUNCTION #
-        INCB     WORK             ;IN HUMAN NUMBERS
+        INCB                    ;WORK IN HUMAN NUMBERS
         CMPB   #7               ;4 DIGITS TO DISPLAY?
         BHI    DISAU4           ;NO
 DISAU9  PULS   D                ;GET OUR BCD BACK IN B
@@ -178,8 +178,8 @@ BINBCD  PSHS   B                ;NEED B
         TFR    A,B              ;FOR COUNTER
         LDA    #$99             ;START-1
 BINBC1  ADDA   #$01             ;MAKE IT BCD
-        DAA      HUMANIZE
-        DECB     COUNT            ;OFF
+        DAA                     ;HUMANIZE
+        DECB                    ;COUNT OFF
         BPL    BINBC1           ;LOOP TILL DONE
         PULS   B,PC             ;RESTORE STATE
 *
@@ -190,25 +190,25 @@ ASCII   TFR    A,B              ;SAVE IN B
         LSRA 
         LSRA 
         LSRA 
-        LSRA     SHIFT            ;TO LS
+        LSRA                    ;SHIFT TO LS
         ADDA   #$30
         ANDB   #$0F             ;LEAVE ONLY LSD
         ADDB   #$30             ;MAKE IT ASCII
-        RTS      DONE
+        RTS                     ;DONE
 *
 * SET BUFFER TO SPACE CODES AND EOW CODE
 *
 CLRBUF  LDA    #$20             ;32 TO INIT
         TFR    A,B              ;AND ITS THE SPACE CODE TOO
-        DECB     LEAVE            ;LAST ONE OUT
+        DECB                    ;LEAVE LAST ONE OUT
         LEAX   4,S              ;GET TO BUFFER START(2DEEP IN STACK)
 CLRBU1  STA    ,X+              ;INIT IT
-        DECB     DONE
+        DECB                    ;DONE
         BNE    CLRBU1           ;NO, LOOP
         LDA    #$2F             ;SLASH CODE
         STA    ,X+              ;SAVE IT
         LEAX   4,S              ;RESTORE TO START(2DEEP IN STACK)
-        RTS      DONE             ;HERE
+        RTS                     ;DONE HERE
 *
 * CMOS INTERFACE ROUTINES FOR ADJUSTMENTS
 *
@@ -221,11 +221,11 @@ BMPNUP  CMPX   #REPLAY          ;SPECIAL CASE?
         LEAX   -4,X             ;DEFEAT AUTO INC
         EXG    A,B              ;BECAUSE OF DAA
         ADDA   #$10             ;ADD 10
-        DAA      HUMANIZE
+        DAA                     ;HUMANIZE
         BCC    BMP2             ;NO CARRY
         EXG    A,B              ;RESTORE TO ORIG
         ADDA   #$01             ;BUMP BY 1
-BMP7    DAA      STAY             ;BCD
+BMP7    DAA                     ;STAY BCD
         EXG    A,B              ;DOUBLE EXCHANGE
 BMP2    EXG    A,B              ;RESTORE TO ORIG
 BMP3    INC    TEMP1B           ;SHOW CHANGE MADE
@@ -233,7 +233,7 @@ BMP6    JMP    WCDV             ;PUT IT BACK
 * ORDINARY CASE
 BMP1    JSR    RCAV             ;GET A BCD NUMBER
         ADDA   #$01             ;ADD 1 TO IT
-BMP0    DAA      HUMANIZE
+BMP0    DAA                     ;HUMANIZE
 BMP4    LEAX   -2,X             ;DEFEAT AUTO INC
         INC    TEMP1B           ;SET FLAG SINCE CHANGE
         JMP    WCAV             ;RETURN IT TO ITS PLACE
@@ -246,7 +246,7 @@ BMPNDN  CMPX   #REPLAY          ;SPECIAL CASE?
         LEAX   -4,X             ;REMOVE OFFSET
         EXG    A,B              ;SWAP LS,MS
         ADDA   #$90             ;SET TO 90
-        DAA      ADJUST           ;TO HUMAN
+        DAA                     ;ADJUST TO HUMAN
         EXG    A,B              ;UNDERFLOW
         ADCA   #$99             ;SUBTRACT UNDERFLOW
         BRA    BMP7             ;FINISH ABOVE
@@ -257,10 +257,10 @@ BMP5    JSR    RCAV             ;GET A BCD NUMBER
 * ALTER - CHANGE CMOS VALUE IF SW MADE AND ALTERABLE
 *
 ALTER   LDB    TEMP1C           ;GET FUNCTION #
-        INCB     NORMALIZE
+        INCB                    ;NORMALIZE
         CMPB   #7               ;UNCHANGEABLE?
         BHI    ALTER1           ;YES
-ALTERX  RTS      FOR              ;NOW ON FUNNY CASE
+ALTERX  RTS                     ;FOR NOW ON FUNNY CASE
 ALTER1  CMPB   #9               ;1ST 2 DIGIT ADJUST??
         BLS    ALTER2           ;YES, ALLOWED
         CMPB   #16              ;COINAGE MODE?
@@ -270,16 +270,16 @@ ALTER1  CMPB   #9               ;1ST 2 DIGIT ADJUST??
 * HERE WHEN COIN FUNCTION BUT NOT COINAGE SELECT
         LDX    #COINSL          ;GRAB THE DATA
         JSR    RCAV             ;GET IT
-        TSTA     SET              ;FLAGS
+        TSTA                    ;SET FLAGS
         BNE    ALTERX           ;NOT AT ZERO, NO CHANGE ALLOWED
-ALTER2  DECB     REMOVE           ;OFFSET
+ALTER2  DECB                    ;REMOVE OFFSET
         ASLB 
-        ASLB     SHIFT            ;X4 FOR ADDRESS
+        ASLB                    ;SHIFT X4 FOR ADDRESS
         LDX    #MSGAUD          ;POINT TO AUDIT MESSAGES
-        ABX      POINT            ;TO CORRECT ADDRESS
+        ABX                     ;POINT TO CORRECT ADDRESS
         LDB    3,X              ;GET OFFSET
         LDX    #CMOS            ;POINT TO CMOS START
-        ABX      GET              ;CMOS ADDRESS + FALL THRU
+        ABX                     ;GET CMOS ADDRESS + FALL THRU
 *
 * CHECK USING THE HIGH SCORE RESET
 *
@@ -302,7 +302,7 @@ HYSCR4  PULS   X                ;GET CMOS ADDRESS
         LDB    #1
         JSR    OUTB0
         PULS   B,X              ;RESTORE REGISTERS
-HYSCR3  LSRB     UP/DOWN
+HYSCR3  LSRB                    ;UP/DOWN
         LBCS   BMPNUP           ;UP
         JMP    BMPNDN           ;DOWN
 *
@@ -332,7 +332,7 @@ ADVSW2  JSR    DELAY
         JSR    INB0
         BITB   #2               ;CHECK ADVANCE SWITCH
         BEQ    ADVSW2           ;STILL OPEN
-        RTS      CLOSED           ;AGAIN-RETURN
+        RTS                     ;CLOSED AGAIN-RETURN
 * NEW TEST
 NEWTST  JSR    SCRCLV           ;CLEAR SCREEN
         BSR    WATCHD           ;RESET WATCHDOG
@@ -374,7 +374,7 @@ WATCHD  PSHS   X,B,CC
         JSR    OUTB0
         LDX    #$CC00           ;READ COIN DOOR SWITCHES
         JSR    INB0
-        COMB     CHECK            ;STATE OF SWITCHES
+        COMB                    ;CHECK STATE OF SWITCHES
         ANDB   #3
         BEQ    WATCH1           ;SHIFT ONTO BUFFER
         ANDCC  #$FE
@@ -383,11 +383,11 @@ WATCH1  LDB    ASBUFF
         STB    ASBUFF
         BNE    WATCH2           ;CHECK BUFFER
         STB    ASLAST           ;DEFINITELY OPEN, UPDATE LAST POSITION
-WATCH2  COMB     CHECK            ;IF DEFINITELY CLOSED
+WATCH2  COMB                    ;CHECK IF DEFINITELY CLOSED
         BNE    WATCH3           ;NO?, QUIT
         LDB    ASLAST           ;CHECK LAST POSITION
         BNE    WATCH3           ;STILL CLOSED, QUIT
-        COMB     NEW              ;CLOSURE
+        COMB                    ;NEW CLOSURE
         STB    ASLAST           ;UPDATE LAST POSITION
         INC    ASCNTR           ;INCREMENT ADV. W AUTO COUNTER
 WATCH3  PULS   CC,B,X,PC        ;RESTORE REGISTERS, RETURN
@@ -489,7 +489,7 @@ COLOR2  STD    ,--X             ;STORE COLOR TO SCREEN
         CMPX   TEMP2A           ;CHECK IF BAR FINISHED
         BNE    COLOR2
         LEAX   $900,X
-        TSTA     CHECK            ;FOR FIRST BAR
+        TSTA                    ;CHECK FOR FIRST BAR
         BNE    COLOR3
         LDX    #$F00            ;WIDEN IT
 COLOR3  JSR    WATCHD           ;RESET WATCHDOG
@@ -512,7 +512,7 @@ RAMBA2  STD    ,--X             ;STORE COLOR DATA
         CMPX   TEMP2A           ;BAR FINISHED?
         BNE    RAMBA2
         LEAX   $900,X
-        TSTA     1ST              ;BAR?
+        TSTA                    ;1ST BAR?
         BNE    RAMBA3           ;NO
         LDX    #$F00            ;WIDEN IT
 RAMBA3  JSR    WATCHD           ;RESET DOG
@@ -520,18 +520,18 @@ RAMBA3  JSR    WATCHD           ;RESET DOG
         BNE    RAMBA4           ;YES, ABORT
         CMPY   #COLRMD+16       ;DONE ALL BARS?
         BNE    RAMBA1           ;NO, LOOP
-RAMBA4  RTS      GO               ;BACK
+RAMBA4  RTS                     ;GO BACK
 *
 * COIN SELECT SUBROUTINE HERE
 *
 COININ  LDX    #COINSL          ;POINT TO SELECT MODE
         JSR    WCBV             ;WRITE IT
-        ASLB     X2
+        ASLB                    ;X2
         PSHS   B                ;FOR LATER
-        ASLB     X4
+        ASLB                    ;X4
         ADDB   ,S+              ;2X+4X=6X
         LDX    #CSELCT-6        ;POINT TO SOURCE
-        ABX      ADD              ;TO IT
+        ABX                     ;ADD TO IT
         LDY    #SLOT1M          ;POINT TO DESTINATION
         LDB    #$06             ;6 BYTES TO MOVE
 * FALL THRU TO MOVE
@@ -543,7 +543,7 @@ CMMV1   LDA    ,X+              ;GET SOURCE
         EXG    X,Y              ;SWAP
         JSR    WCAV             ;WRITE IT
         EXG    X,Y              ;SWAP BACK
-        DECB     DONE?
+        DECB                    ;DONE?
         BNE    CMMV1            ;NO,LOOP
         PULS   A,PC             ;RETURN CLEAN
 *
@@ -551,13 +551,13 @@ CMMV1   LDA    ,X+              ;GET SOURCE
 *
 CLRAUD  LDB    #$0E             ;28 TOTAL BYTES
         BRA    CMSCLR
-CLRALL  CLRB     DO               ;128
+CLRALL  CLRB                    ;DO 128
 CMSCLR  LDX    #CMOS            ;POINT TO START
-STOR0X  CLRA     DO               ;IT SO STORRA IS GEN PURPOSE
+STOR0X  CLRA                    ;DO IT SO STORRA IS GEN PURPOSE
 STORRA  JSR    WCAV             ;WRITE INDIRECT
-        DECB     DONE?
+        DECB                    ;DONE?
         BNE    STORRA           ;NO, LOOP
-        RTS      BYE
+        RTS                     ;BYE
 *
 * INIT CMOS: SAVES STATE
 *
@@ -577,20 +577,20 @@ AUD1    PSHS   D,X              ;SAVE STATE
 AUD     PSHS   D,X              ;SAVE STATE
 AUD2    ANDB   #$07             ;LIMIT TO 0-7
         BEQ    AUDX             ;AND EXIT ON 0(INVALID COUNTER)
-        ASLB     MAKE             ;INTO 4X
+        ASLB                    ;MAKE INTO 4X
         ASLB 
         LDX    #CMOS-3          ;POINT TO START-3 (BECAUSE OF RMB 1)
-        ABX      GET              ;THE CORRECT DESTINATION
+        ABX                     ;GET THE CORRECT DESTINATION
         JSR    RCBV
         PSHS   B                ;SAVE IT
         JSR    RCBV             ;GET LSBYTE
         PSHS   B                ;SAVE IT
         ADDA   ,S+              ;DO LSB FIRST
-        DAA      HUMANIZE
+        DAA                     ;HUMANIZE
         EXG    A,B              ;DAA ONLY WORKS ON A
         PULS   A                ;GET MSBYTE
         ADCA   #$0              ;PROPOGATE CARRY
-        DAA      HUMANIZE
+        DAA                     ;HUMANIZE
         LEAX   -4,X             ;DEFEAT AUTO INC
         JSR    WCDV             ;SAVE MS/LS
 AUDX    PULS   D,X,PC           ;CLEAN UP
@@ -599,7 +599,7 @@ AUDX    PULS   D,X,PC           ;CLEAN UP
 *
 ACRED   PSHS   A,X              ;SAVE
         ADDA   CREDIT           ;GET PRESENT
-        DAA      HUMANIZE
+        DAA                     ;HUMANIZE
         BCC    ACRD0            ;NO OVERFLOW
         LDA    #$99             ;YES, STAY AT 99
 ACRD0   STA    CREDIT           ;SAVE NEW COUNT
@@ -618,9 +618,9 @@ COINC   PSHS   D,X              ;SAVE STATE
 COINL   PSHS   D,X              ;SAVE STATE
         LDB    #$01             ;1ST TOTALS(LEFT COIN)
 COIN    JSR    AUD1             ;BUMP COUNT BY 1
-        ASLB     DOUBLE           ;FOR CMOS
+        ASLB                    ;DOUBLE FOR CMOS
         LDX    #SLOT1M-2        ;POINT TO START-2
-        ABX      REMOVE           ;OFFSET
+        ABX                     ;REMOVE OFFSET
         JSR    RCBV             ;GET CORRECT SLOT X
         BSR    BCDBIN           ;CONVERT TO BINARY
         LDA    BUNITS           ;GET PRESENT BONUS UNITS
@@ -648,12 +648,12 @@ COIN1   LDX    #CUNITC          ;HOW MANY?
         LDA    BUNITS           ;GET BONUS SO FAR
         BSR    BCDBIN           ;CONVERT TO BINARY
         BSR    DIVAB            ;DIVIDE
-        TSTA     ANY              ;YET?
+        TSTA                    ;ANY YET?
         BEQ    COIN2            ;NO
         CLR    CUNITS           ;YES, RESET ANY EXTRA
         CLR    BUNITS
 COIN2   ADDA   ,S+              ;GET OTHER CREDITS EARNED
-        DAA      HUMANIZE
+        DAA                     ;HUMANIZE
         LDB    #$04             ;BUMP TOTPDC
         JSR    AUD              ;BY THE COUNT PAID FOR
         JSR    ACRED            ;ADD TO CREDITS COUNTER
@@ -662,30 +662,30 @@ COIN2   ADDA   ,S+              ;GET OTHER CREDITS EARNED
 * DIVAB: A/B, REMAINDER IN B
 *
 DIVAB   PSHS   B                ;SAVE
-        TSTB     ANY?
+        TSTB                    ;ANY?
         BNE    DIVAB0           ;YES, HANDLE
-        CLRA     NO,              ;SET TO 0
+        CLRA                    ;NO,SET TO 0
         PULS   B,PC             ;CLEAN RETURN
 DIVAB0  EXG    A,B              ;FOR DAA
         LDA    #$99             ;START-1
 DIVAB1  ADDA   #$01             ;NEXT
-        DAA      HUMANIZE
+        DAA                     ;HUMANIZE
         SUBB   ,S               ;TAKE AWAY N
         BCC    DIVAB1           ;LOOP TILL OVERFLOW
         ADDB   ,S+              ;ADD REMAINDER + FIX STACK
-        RTS      BTE
+        RTS                     ;BTE
 *
 * BCDBIN: BCD=B, BINARY=B
 *
 BCDBIN  PSHS   A                ;SAVE STATE
         EXG    A,B              ;MOVE B TO A FOR DAA
-        CLRB     SET              ;COUNT TO ZERO
-BCDBN1  TSTA     DONE?
+        CLRB                    ;SET COUNT TO ZERO
+BCDBN1  TSTA                    ;DONE?
         BNE    BCDBN2           ;NO
         PULS   A,PC             ;CLEAN UP + GO
 BCDBN2  ADDA   #$99             ;SUBTRACT 1
-        DAA      HUMANIZE
-        INCB     BUMP             ;COUNTER
+        DAA                     ;HUMANIZE
+        INCB                    ;BUMP COUNTER
         BRA    BCDBN1           ;LOOP TILL A=0
 *
 * RESET HIGH SCORES BACK TO DEFAULT+BACKUP HSTD
@@ -696,18 +696,18 @@ RHSTD   PSHS   X,Y,D            ;SAVE STATE
         LDY    #CRHSTD          ;POINT TO DESTINATION
         LDB    #48              ;6X8 TO MOVE
         JSR    CMOSMV           ;MOVE IT
-        BSR    RHSTD$           ;MOVE DEFALTS TO TODAY RAM
+        BSR    RHSTDS           ;MOVE DEFALTS TO TODAY RAM
         PULS   X,Y,D,PC         ;GO BACK
 *
 * MOVE DEFALTS TO TODAYS HSTD AREA
 *
-RHSTD$  PSHS   X,Y,D            ;SAVE STATE
+RHSTDS  PSHS   X,Y,D            ;SAVE STATE
         LDY    #DEFALT          ;POINT TO DEFALTS
         LDX    #THSTAB          ;DESTINATION
         LDB    #48              ;6X8 TO MOVE
 RHSTD1  LDA    ,Y+              ;GET SOURCE
         JSR    WCAV             ;OUTPUT AS DOUBLE BYTE
-        DECB     DONE?
+        DECB                    ;DONE?
         BNE    RHSTD1           ;NO
         PULS   X,Y,D,PC         ;CLEAN UP + GO BACK
 *
@@ -744,34 +744,34 @@ MSGAUD  FDB    A1,$1
 *
 * ACTUAL MESSAGES HERE
 *
-A1      FCC    "COINS           ;LEFT/"
-A2      FCC    "COINS           ;CENTER/"
-A3      FCC    "COINS           ;RIGHT/"
-A4      FCC    "TOTAL           ;PAID/"
-A5      FCC    "SHIPS           ;WON/"
-A6      FCC    "TOTAL           ;TIME/"
-A7      FCC    "TOTAL           ;SHIPS/"
-A8      FCC    "BONUS           ;SHIP LEVEL/"
-A9      FCC    "NUMBER          ;OF SHIPS/"
-A10     FCC    "COINAGE         ;SELECT/"
-A11     FCC    "LEFT            ;COIN MULT/"
-A12     FCC    "CENTER          ;COIN MULT/"
-A13     FCC    "RIGHT           ;COIN MULT/"
-A14     FCC    "COINS           ;FOR CREDIT/"
-A15     FCC    "COINS           ;FOR BONUS/"
-A16     FCC    "MINIMUM         ;COINS/"
-A17     FCC    "FREE            ;PLAY/"
-A18     FCC    "GAME            ;ADJUST 1/"
-A19     FCC    "GAME            ;ADJUST 2/"
-A20     FCC    "GAME            ;ADJUST 3/"
-A21     FCC    "GAME            ;ADJUST 4/"
-A22     FCC    "GAME            ;ADJUST 5/"
-A23     FCC    "GAME            ;ADJUST 6/"
-A24     FCC    "GAME            ;ADJUST 7/"
-A25     FCC    "GAME            ;ADJUST 8/"
-A26     FCC    "GAME            ;ADJUST 9/"
-A27     FCC    "GAME            ;ADJUST 10/"
-A28     FCC    "SPECIAL         ;FUNCTION/"
+A1      FCC    "COINS LEFT/"
+A2      FCC    "COINS CENTER/"
+A3      FCC    "COINS RIGHT/"
+A4      FCC    "TOTAL PAID/"
+A5      FCC    "SHIPS WON/"
+A6      FCC    "TOTAL TIME/"
+A7      FCC    "TOTAL SHIPS/"
+A8      FCC    "BONUS SHIP LEVEL/"
+A9      FCC    "NUMBER OF SHIPS/"
+A10     FCC    "COINAGE SELECT/"
+A11     FCC    "LEFT COIN MULT/"
+A12     FCC    "CENTER COIN MULT/"
+A13     FCC    "RIGHT COIN MULT/"
+A14     FCC    "COINS FOR CREDIT/"
+A15     FCC    "COINS FOR BONUS/"
+A16     FCC    "MINIMUM COINS/"
+A17     FCC    "FREE PLAY/"
+A18     FCC    "GAME ADJUST 1/"
+A19     FCC    "GAME ADJUST 2/"
+A20     FCC    "GAME ADJUST 3/"
+A21     FCC    "GAME ADJUST 4/"
+A22     FCC    "GAME ADJUST 5/"
+A23     FCC    "GAME ADJUST 6/"
+A24     FCC    "GAME ADJUST 7/"
+A25     FCC    "GAME ADJUST 8/"
+A26     FCC    "GAME ADJUST 9/"
+A27     FCC    "GAME ADJUST 10/"
+A28     FCC    "SPECIAL FUNCTION/"
 *
 * UPPER HALF CHECKBYTE
 *
@@ -780,21 +780,21 @@ A28     FCC    "SPECIAL         ;FUNCTION/"
 * DEFAULT HERE FOR NOW
 *
 DEFALT  FCB    $02,$12,$70      ;CRHSTD
-        FCC    'DRJ'
+        FCC    "DRJ"
         FCB    $01,$83,$15      ;CRHST1
-        FCC    'SAM'
+        FCC    "SAM"
         FCB    $01,$59,$20      ;THSTD2
-        FCC    'LED'
+        FCC    "LED"
         FCB    $01,$42,$85      ;THSTD3
-        FCC    'PGD'
+        FCC    "PGD"
         FCB    $01,$25,$20      ;THSTD4
-        FCC    'CRB'
+        FCC    "CRB"
         FCB    $01,$10,$35      ;THSTD5
-        FCC    'MRS'
+        FCC    "MRS"
         FCB    $00,$82,$65      ;THSTD6
-        FCC    'SSR'
+        FCC    "SSR"
         FCB    $00,$60,$10      ;THSTD7
-        FCC    'TMH'
+        FCC    "TMH"
 HSDEFE  EQU    *                ;END OF HIGH SCORE DEFAULTS
         FCB    $00              ;DIPSW
         FCB    $5A              ;CMOSCK
@@ -833,6 +833,6 @@ CSELCT  FCB    $01,$04,$01,$02,$04,$00 ;50C..3/$1.00
 *
 * COPYRIGHT
 *
-CRIGHT  FCC    'COPYRIGHT       ;1980 - WILLIAMS ELECTRONICS'
+CRIGHT  FCC    "COPYRIGHT 1980 - WILLIAMS ELECTRONICS"
 ENDPGM  EQU    *
         END  

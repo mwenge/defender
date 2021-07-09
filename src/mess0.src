@@ -1,6 +1,6 @@
-        TTL    MESS0            ;- MESSAGE BLOCK REV 0 - 12/22/80
-        NMLIST
-        NOGEN
+*       TTL    MESS0            ;- MESSAGE BLOCK REV 0 - 12/22/80
+*       NMLIST
+*       NOGEN
         SETDP  $A0
 *
 * EQUATES
@@ -44,6 +44,7 @@ DISTBL  RMB    38               ;DISPLAY TABLE(SWITCH TEST)
 *
 *
         ORG    $C000
+        PUT    $2000
 *
 * VECTORS INTO MESSAGE ROM
 *
@@ -58,13 +59,13 @@ TV7     JMP    WNUMBC
 TV8     JMP    ENUMBC
 TV9     JMP    ERASTK
 TV10    JMP    DISSTK
-TV11    JMP    OPER$
+TV11    JMP    OPERS
 TV12    JMP    OPERIN
         RMB    9                ;EXPANSION FOR 3 MORE
 *
 * CHECKBYTE
 *
-        FDB    $FFFF
+        FDB    $5BFF            ;Fixme was: $FFFF
 *
 * OPERATOR INSTRUCTION TABLE
 *
@@ -175,7 +176,7 @@ COMPV   FDB    COMP             ;"COMPLETED"
 * SAM'S VECTORS
 *
 HOFV    FDB    HOF
-INIT$V  FDB    INIT$
+INITSSV  FDB    INITSS
 HALLDV  FDB    HALLD
 HALENV  FDB    HALEN
 VMEND   FDB    MEND             ;END OF MESSAGES
@@ -279,7 +280,7 @@ SWARM   FDB    SWARMR
 BAIT    FDB    BAITER
         FCB    RLF,HMC,6
         FDB    N200
-CRED    FDB    CREDW$
+CRED    FDB    CREDWS
 SCAN    FDB    SCANER
 ELEC    FDB    ELECTR
         FCB    RLF,RLF,HMC,12
@@ -299,17 +300,17 @@ COMP    FDB    COMPLE
 *
 HOF     FDB    YOU,HAVE,QUALIF,FOR
         FCB    RLF
-        FDB    THE,DEFEND,H.O.F
+        FDB    THE,DEFEND,HAOFFA
         FCB    RLF,RLF
         FDB    SELECT,INITLS,WITH,UP,DOWN,STICK
         FCB    RLF,RLF
         FDB    PRESS,FIRE,TO,ENTER,INITAL
-INIT$   FDB    INITS
+INITSS  FDB    INITS
         FCB    HMT,8
         FDB    INITS+2
         FCB    HMT,16
         FDB    INITS+4
-HALLD   FDB    H.O.F
+HALLD   FDB    HAOFFA
         FCB    RTC,$22,$68
         FDB    TODAYS
         FCB    HMT,$3E
@@ -339,7 +340,7 @@ BARS    FCC    "BARS/"
 BE      FCC    "BE/"
 BOMB    FCC    "BOMB/"
 BOMBER  FCC    "BOMBER/"
-BX      FCC    "BONUS           ;X/"
+BX      FCC    "BONUS X/"
 CAN     FCC    "CAN/"
 CCOMA   FCC    ",/"
 CCOLON  FCC    ":/"
@@ -350,12 +351,12 @@ COINW   FCC    "COIN/"
 COLOR   FCC    "COLOR/"
 COMPLE  FCC    "COMPLETED/"
 CREDW   FCC    "CREDIT/"
-CREDW$  FCC    "CREDITS:/"
+CREDWS  FCC    "CREDITS:/"
 DEFEND  FCC    "DEFENDER/"
 DETECT  FCC    "DETECTED/"
 DOOR    FCC    "DOOR/"
 DOWN    FCC    "DOWN/"
-ELECTR  FCC    "ELECTRONICS     ;INC./"
+ELECTR  FCC    "ELECTRONICS INC./"
 ENTER   FCC    "ENTER/"
 ENTERD  FCC    "ENTERED/"
 ERRORS  FCC    "ERRORS/"
@@ -365,15 +366,15 @@ FIRE    FCC    "FIRE/"
 FOR     FCC    "FOR/"
 GAME    FCC    "GAME/"
 GREAT   FCC    "GREATEST/"
-H.O.F   FCC    "HALL            ;OF FAME/"
+HAOFFA  FCC    "HALL OF FAME/"
 HAVE    FCC    "HAVE/"
-HSR     FCC    "HIGHSCORE       ;RESET/"
+HSR     FCC    "HIGHSCORE RESET/"
 HYPERS  FCC    "HYPERSPACE/"
 INDCAT  FCC    "INDICATE/"
 INDIVL  FCC    "INDIVIDUAL/"
 INITAL  FCC    "INITIAL/"
 INITLS  FCC    "INITIALS/"
-INVSW   FCC    "INVALID         ;SWITCH/"
+INVSW   FCC    "INVALID SWITCH/"
 LANDER  FCC    "LANDER/"
 LEFT    FCC    "LEFT/"
 MAKE    FCC    "MAKE/"
@@ -396,7 +397,7 @@ OVER    FCC    "OVER/"
 PATRNS  FCC    "PATTERNS/"
 PLAYER  FCC    "PLAYER/"
 PLAYRS  FCC    "PLAYERS/"
-POD     FCC    "                ;POD/"
+POD     FCC    " POD/"
 PRESEN  FCC    "PRESENTS/"
 PRESS   FCC    "PRESS/"
 QUALIF  FCC    "QUALIFIED/"
@@ -650,7 +651,7 @@ LETTRZ  FDB    $0100,$0000,$0101,$0100
 *
 * UPPER HALF CHECKBYTE
 *
-        FDB    $FFFF
+        FDB    $84FF            ;Fixme was: $FFFF
 *
 * MESSAGE INSTRUCTION TABLE
 *
@@ -669,7 +670,7 @@ PIC     EQU    8                ;PICTURE                              <3 BYTES>
 *    Y POINTING TO TABLE
 *
 *
-OPER$   PSHS   U,X,Y            ;SAVE STATE
+OPERS   PSHS   U,X,Y            ;SAVE STATE
         LDU    #VINS16          ;"PRESS ADVANCE TO STEP"
         BRA    OPER0            ;DO BELOW
 OPERIN  PSHS   U,X,Y
@@ -777,7 +778,7 @@ TEXT5   LDU    ,X++             ;GET NEXT WORD OR INSTRUCTION
         TFR    U,D              ;TRANSFER INSTRUCION INTO A
         CMPA   #8               ;CHECK IF INSTRUCTION IS VALID
         BHI    TEXT4A           ;NO? QUIT MESSAGE
-        ASLA     MULTIPLY         ;BY 2
+        ASLA                    ;MULTIPLY BY 2
         LDY    #INSTBL          ;GET INSTRUCTION TABLE ADDRESS
         JSR    [A,Y]            ;EXECUTE INSTRUCTION
         BRA    TEXT4            ;NEXT WORD OR INSTRUCTION
@@ -801,10 +802,10 @@ TEXT7   STX    WORDPT           ;SAVE WORD POINTER
         CMPB   #44              ;CHECK FOR LAST VALID GROUP
         BLS    TEXT7B           ;YES?, WRITE IT
 TEXT7A  LDB    #3               ;CHANGE INVALID CHAR TO QUEST MK
-TEXT7B  ASLB     MULTIPLY         ;CHARACTER BY 4
+TEXT7B  ASLB                    ;MULTIPLY CHARACTER BY 4
         ASLB 
         LDX    #CHRTBL          ;GET CHARACTER DESCRIPTER TABLE
-        ABX    FIND             ;CHARACTER DESCRIPTER
+        ABX                     ;FIND CHARACTER DESCRIPTER
         TFR    X,Y              ;SET CHARACTER DESCRIPTER POINTER
         LDD    CURSER           ;SET CURSER
         LDX    TEMP2A           ;WRITE/ERASE CHARACTER
@@ -816,7 +817,7 @@ TEXT7B  ASLB     MULTIPLY         ;CHARACTER BY 4
         JMP    ,X
 TEXT8   PULS   CC,D,X,Y,U
         ANDCC  #$FE             ;CLEAR CARRY-MESSAGE NOT COMPLETED
-        RTS      RETURN           ;FROM WRITE/ERASE CHARACTER
+        RTS                     ;RETURN FROM WRITE/ERASE CHARACTER
 * INSTRUCTION ADDRESS TABLE
 INSTBL  FDB    RSP1,RLS1,HMT1,HMC1,VMT1,VMC1,RTC1,RLF1,PIC1
 * RESET SPACE BETWEEN CHARACTERS
@@ -920,8 +921,8 @@ NUMB4   ANDA   #$F0             ;EXTRACT NEXT DIGIT
         PULS   CC,D,X,Y,U
         LDX    CURSER           ;NEW SCREEN POSITION
         ORCC   #1               ;SET CARRY BIT(NUMBER COMPLETED)
-        RTS      RETURN
-NUMB5   LSRA     DIVIDE           ;NUMBER BY 4
+        RTS                     ;RETURN
+NUMB5   LSRA                    ;DIVIDE NUMBER BY 4
         LSRA 
         LDX    #N0              ;SET DIGIT DESCRIPTER
         LEAY   A,X
@@ -938,8 +939,8 @@ NUMB5   LSRA     DIVIDE           ;NUMBER BY 4
         JMP    ,X
 NUMB6   PULS   CC,D,X,Y,U
         ANDCC  #$FE             ;CLEAR CARRY BIT(NUMBER NOT FINISHED)
-        RTS      RETURN
-NUMB10  ASLB     SHIFT            ;ONE NIBBLE LEFT
+        RTS                     ;RETURN
+NUMB10  ASLB                    ;SHIFT ONE NIBBLE LEFT
         ROLA 
         ASLB 
         ROLA 

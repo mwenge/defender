@@ -1,12 +1,13 @@
-        TTL    ROMC0            ;- DIAG ROM AT C000 - 12/22/80
+*       TTL    ROMC0            ;- DIAG ROM AT C000 - 12/22/80
 *
 * SYSTEM EQUATES
 *
 LETCOL  EQU    $C001            ;USE COLOR 1!!!
-THSTAB  EQU    $B260            ;HOME!!
+THSTAB	EQU	$B260	              ;HOME!!
 KILSND  EQU    $13              ;SOUND NUMBER TO TURN OFF SOUNDS
 LSOUND  EQU    $1F              ;LAST SOUND TO BE TESTED
 SWSND   EQU    $08              ;SOUND MADE FOR SWCLOSURE
+
 *
 *
 * DIAGNOSTIC ROM
@@ -33,7 +34,7 @@ SWSND   EQU    $08              ;SOUND MADE FOR SWCLOSURE
         JMP    CRAM10
         JMP    CRAM20
         JMP    SOUND0
-        JMP    RHSTD$
+        JMP    RHSTDS
 OUTB0   JMP    STBXBV           ;DIRECT
 INB0    JMP    LDBXBV           ;DIRECT
 *
@@ -63,7 +64,7 @@ VDISST  JSR    LJSRV
         FDB    TV10
         FCB    2
         RTS  
-VOPER$  JSR    LJSRV
+VOPERS  JSR    LJSRV
         FDB    TV11
         FCB    2
         RTS  
@@ -74,7 +75,7 @@ VOPERI  JSR    LJSRV
 *
 * CHECKBYTE
 *
-        FDB    $FFFF
+        FDB    $D9FF            ;Fixme was: $FFFF
 *
 * INITIAL ROM OK, RAM OK
 *
@@ -131,12 +132,12 @@ IDIS31  JSR    DELY10           ;DELAY 10 MILLISECONDS
         JSR    INB0
         BITB   #2               ;CHECK FOR ADVANCE
         BEQ    IDIS32           ;NO ADVANCE?, CONTINUE
-        LSRB     CHECK            ;AUTO/MANUAL SWITCH
+        LSRB                    ;CHECK AUTO/MANUAL SWITCH
         BCS    IDIS33           ;AUTO?, BACK TO MAIN PROGRAM
         BRA    CROM0            ;MANUAL?, JUMP TO DIAGNOSTICS
 IDIS32  LEAY   -1,Y             ;COUNT DOWN TIME
         BNE    IDIS31
-IDIS33  RTS      BACK             ;TO MAIN PROGRAM
+IDIS33  RTS                     ;BACK TO MAIN PROGRAM
 *
 * POWER UP SUBROUTINE
 *
@@ -149,13 +150,13 @@ PWRUP   ANDCC  #$EF             ;REMOVE CONTINUOUS TEST IF GET BACK HERE
         JSR    INB0
         ANDB   #$F              ;REMOVE GARBAGE
         BNE    PWRUP4           ;YES?, WHICH FUNCTION?
-        RTS      NO?,             ;DONE
+        RTS                     ;NO?, DONE
 *SPECIAL FUNCTION
-PWRUP4  CLRB     CLEAR            ;SPECIAL FUNCTION FLAG
+PWRUP4  CLRB                    ;CLEAR SPECIAL FUNCTION FLAG
         JSR    OUTB0
         LDX    #DIPSW           ;GET FUNCTION NUMBER
         JSR    RCBV
-        CLRA     ZERO             ;FUNCTION NUMBER
+        CLRA                    ;ZERO FUNCTION NUMBER
         LEAX   -2,X
         JSR    WCAV
         CMPB   #$15             ;AUTO CYCLE?
@@ -251,7 +252,7 @@ CROM20  JSR    NEXTST
 * COMPREHENSIVE RAM TEST
 *
 CRAM0   JSR    NEWTST
-        CLRB     TURN             ;OFF LEDS
+        CLRB                    ;TURN OFF LEDS
         JSR    LEDS
         JSR    WHITE            ;WHITE LETTERS
         LDU    #VRAMTS          ;"RAM TEST "
@@ -301,7 +302,7 @@ CRAM10  TFR    Y,D              ;GET ERROR
         TSTA 
         BNE    CRAM11
         TFR    B,A
-CRAM11  CLRB     FIND             ;BIT NUMBER
+CRAM11  CLRB                    ;FIND BIT NUMBER
 CRAM12  INCB 
         LSRA 
         BCC    CRAM12
@@ -315,7 +316,7 @@ CRAM13  SUBA   #3
         LDX    #$4290           ;SCREEN ADDRESS
         JSR    VWTEXT           ;WRITE TO SCREEN
         LDB    TEMP1B           ;GET BAD BLOCK NUMBER
-        ASLB     SHIFT            ;ONE NIBBLE LEFT
+        ASLB                    ;SHIFT ONE NIBBLE LEFT
         ASLB 
         ASLB 
         ASLB 
@@ -389,7 +390,7 @@ CMOS11  JSR    INB0
         LDD    #$10             ;INITIALIZE PATTERN COUNTER AND CLEAR A
         STB    TEMP1A
 * TEST LOOP
-        CLRA     ZERO             ;TEST COUNTER
+        CLRA                    ;ZERO TEST COUNTER
 CMOS12  LDX    #CMOS            ;INITIALIZE CMOS POINTER
         LDB    TEMP1A           ;GET START OF PATTERN
 CMOS13  JSR    OUTB0
@@ -407,7 +408,7 @@ CMOS14  JSR    INB0
         DECB 
         ANDB   #$F              ;MASK UPPER NIBBLE
         BNE    CMOS15           ;ERROR? ABORT TEST(TEMP1A>0)
-        INCA     CHECK            ;COUNTER
+        INCA                    ;CHECK COUNTER
         BNE    CMOS14
         JSR    WATCHD           ;RESET WATCHDOG
         TST    ASCNTR           ;CHECK FOR ADV. W AUTO
@@ -483,7 +484,7 @@ COLRM2  JSR    OUTB0
 * AUDIO TEST
 *
 SOUND0  JSR    NEWTST
-        CLRB     TURN             ;OFF LEDS
+        CLRB                    ;TURN OFF LEDS
         STB    TEMP2C           ;INIT TOP HALF OF NUMBER!!
         STB    TEMP2C+1         ;AND BOTTOM
         JSR    LEDS
@@ -495,7 +496,7 @@ SOUND0  JSR    NEWTST
         JSR    VOPERI
         LDY    #1               ;NO DELAY ON FIRST SOUND
 SOUND1  LDU    #SKIPSN          ;GET START OF SKIP SOUND TABLE
-        CLRA     INITIALIZE       ;SOUND COUNTER
+        CLRA                    ;INITIALIZE SOUND COUNTER
 SOUND2  LDX    #$CC00           ;READ COIN DOOR SWITCHES
         JSR    INB0
         BITB   #1               ;CHECK AUTO/MANUAL BIT
@@ -505,7 +506,7 @@ SOUND2  LDX    #$CC00           ;READ COIN DOOR SWITCHES
         JSR    DELY10           ;PAUSE 10 MILLISECONDS
         BRA    SOUND2           ;KEEP WAITING
 SOUND3  JSR    DELAY            ;DELAY BETWEEN SOUND IN AUTO
-SOUND4  INCA     ADVANCE          ;SOUND NUMBER
+SOUND4  INCA                    ;ADVANCE SOUND NUMBER
         CMPA   ,U               ;SKIP THIS SOUND?
         BNE    SOUND5           ;NO?, PLAY IT
         LEAU   1,U              ;ADVANCE SKIP SOUND TABLE POINTER
@@ -538,6 +539,7 @@ SOUND6  LDB    #KILSND          ;TURN OFF SOUND
 *
 * SWITCH TEST
 *
+
 SWITST  JSR    NEWTST
         JSR    WHITE            ;WHITE LETTERS
         LDU    #VSWTTS          ;"SWITCH TEST "
@@ -546,7 +548,7 @@ SWITST  JSR    NEWTST
         LDY    #ISWTTS          ;GIVE INSTRUCTIONS
         JSR    VOPERI
         TFR    DP,A             ;GET ADDRESS OF DISTBL
-        LDB    #$FF!.DISTBL
+        LDB    #$62             ;Fixme: was #$FF!.DISTBL
         STD    TEMP2C           ;SAVE IT
         ADDB   #38              ;INITIALIZE TABLE
         TFR    D,X
@@ -565,7 +567,7 @@ SWIT2   LDA    #1               ;INTIALIZE CONTROL PANEL NUMBER
         LDX    #$CC00           ;GET FIRST PIA ADDRESS
         LDU    TEMP2C           ;GET START OF LAST PIA READS
         LEAU   LSCC00-DISTBL,U
-        CLRA     INITIALIZE       ;SWITCH NUMBER COUNTER
+        CLRA                    ;INITIALIZE SWITCH NUMBER COUNTER
 SWIT3   JSR    INB0
         CMPX   #$CC06           ;COCTAIL PIA?
         BNE    SWIT3A           ;NO?, SKIP MASK
@@ -606,8 +608,8 @@ SWIT5   STB    TEMP1B           ;SAVE CHANGE
         LDB    #1               ;INITIALIZE BIT TEST POINTER
 SWIT6   BITB   TEMP1B           ;CHECK FOR CHANGED BIT
         BNE    SWIT7            ;YES?, NEXT STEP
-        INCA     ADVANCE          ;SWITCH NUMBER COUNTER
-        ASLB     MOVE             ;BIT TEST POINTER
+        INCA                    ;ADVANCE SWITCH NUMBER COUNTER
+        ASLB                    ;MOVE BIT TEST POINTER
         BRA    SWIT6            ;CONTINUE TEST
 SWIT7   LDX    TEMP2C           ;GET START OF SWITCH SCREEN TABLE
         BITB   TEMP1A           ;CHECK NEW STATE OF SWITCH
@@ -636,7 +638,7 @@ SWIT10  TST    ,X+              ;FIND AVAILABLE SPOT ON SCREEN TABLE
         PULS   A                ;GET SWITCH NUMBER
         CMPA   #$8              ;CHECK IF $CC00 PIA
         BLO    SWIT4A           ;SKIP PLAYER NUMBER, NEXT SCAN
-        LSRA     CHECK            ;IF ONE OR TWO PLAYER START
+        LSRA                    ;CHECK IF ONE OR TWO PLAYER START
         CMPA   #$6
         BEQ    SWIT4A           ;SKIP PLAYER NUMBER, NEXT SCAN
         LDX    #$CC06           ;CHECK IF COCTAIL
@@ -644,7 +646,7 @@ SWIT10  TST    ,X+              ;FIND AVAILABLE SPOT ON SCREEN TABLE
         TSTB 
         BPL    SWIT4A           ;NO?, NEXT SCAN
         LDX    CURSER           ;STEAL CURSER FROM TEXT
-        CLRA     GET              ;PANEL NUMBER
+        CLRA                    ;GET PANEL NUMBER
         LDB    TEMP1C
         JSR    VWNUMB           ;WRITE TO SCREEN
         BRA    SWIT4A           ;NEXT SCAN
@@ -653,7 +655,7 @@ SWIT11  LDU    #VSW0            ;GET FIRST SWITCH NAME VECTOR ADDRESS
         CMPA   #24              ;CHECK IF ON CONTROL PANEL 2
         BLO    SWT11A           ;NO?, WRITE IT
         SUBA   #16              ;SAME NAMES AS PANEL 1 SWITCHES
-SWT11A  ASLA     MULTIPLY         ;SWITCH NUMBER BY 2
+SWT11A  ASLA                    ;MULTIPLY SWITCH NUMBER BY 2
         LEAU   A,U              ;OFFSET ADDRESS TO CHANGED SWITCH NAME
         TFR    X,D              ;GET SCREEN TABLE POINTER
         SUBD   TEMP2C           ;GET DISTANCE FROM TOP

@@ -73,13 +73,13 @@ UFONV4  ADDA   #10
         CLRB 
         LDA    XTEMP+1
         ADDD   PLAYV
-        ASRA     DIVIDE           ;BY 2
+        ASRA                    ; DIVIDE BY 2
         RORB 
         STD    OYV,X
 UFONVX  RTS  
 *UFOKILL
 UFOKIL  DEC    UFOCNT
-        KILP   0120,UFHSND
+        KILP   $0120,UFHSND
         RTS  
 *
 *PROBE START
@@ -115,7 +115,7 @@ PRBSTX  RTS
 *
 *KILL PROBE
 *
-PRBKIL  KILO   0210,PRHSND
+PRBKIL  KILO   $0210,PRHSND
         LDA    #6
         JSR    RMAX
         LEAY   ,X
@@ -129,7 +129,7 @@ RANDV   JSR    RAND
         LDB    SEED
         SEX  
         ASLB 
-        ROLA   X2
+        ROLA                    ; X2
         STD    OYV,X
         LDB    LSEED
         ANDB   #$3F
@@ -622,7 +622,7 @@ SCZS1   ADDD   XTEMP2           ;AVOID PLAYER
         PULS   A,PC
 *KILL SHITZO
 SCZKIL  DEC    SCZCNT
-        KILP   0115,SCHSND
+        KILP   $0115,SCHSND
         RTS  
 *
 *GET TARGET FROM LIST
@@ -693,7 +693,7 @@ LANDS0  LDX    PD,U
         LDD    [PD4,U]          ;TARGET ALIVE?
         BEQ    LNDSAA
         LDA    OCVECT+1,Y
-        CMPA   #ASTKIL!.$FF
+        CMPA    #(ASTKIL<<8&$FF00)>>8
         BNE    LNDSAA           ;ORBIT
         LDA    OX16,X
         ANDA   #$FC
@@ -746,7 +746,7 @@ LANDG   LDX    PD,U
         LDD    [PD4,U]
         BEQ    LNDSAA           ;DEAD
         LDA    OCVECT+1,Y
-        CMPA   #ASTKIL!.$FF
+        CMPA    #(ASTKIL<<8&$FF00)>>8
         BNE    LNDSAA           ;TAKEN
         LDD    OX16,Y
         ANDB   #$E0
@@ -919,7 +919,7 @@ LKIL1   LDU    OBJID,X          ;GOT A PASSENGER?
         PULS   X
 *KILL LANDR
 LKILL   DEC    LNDCNT
-        KILP   0115,LHSND
+        KILP   $0115,LHSND
         RTS  
 *
 *ASTRONAUT FALL
@@ -1117,7 +1117,7 @@ TIEX    NAP    1,TIE
 *
 *TIE KILL
 *
-TIEKIL  KILO   0125,TIHSND
+TIEKIL  KILO   $0125,TIHSND
         DEC    TIECNT
         LDU    OBJID,X
         LEAY   PD,U
@@ -1250,9 +1250,9 @@ SLEEPP  LDU    CRPROC
         STX    PD+6,U
         LDB    MAPCR            ;GET CURRENT BLOCK
         STB    PD+5,U           ;SAVE IT FOR THE ELL OF IT
-        LDX    #SLEEP$          ;WAKEUP
+        LDX    #SLEEPS          ;WAKEUP
         JMP    SLEEP
-SLEEP$  LDA    PD+5,U           ;GET THE BLOCK
+SLEEPS  LDA    PD+5,U           ;GET THE BLOCK
         BSR    MAPCHG
         JMP    [PD+6,U]         ;AND "RETURN"
 *
@@ -1271,7 +1271,7 @@ LJSR    LEAS   -3,S             ;MAKE ROOM
         STU    3,S
         BSR    MAPCHG           ;MAKE NEW BLOCK
         PULS   A,U              ;RESTORE
-        JSR    [0,S]            ;DO IT
+        FCB    $AD,$F4          ;Fixme: was JSR    [0,S]            ;DO IT
         PSHS   A,U              ;SAVE AGAIN
         LDA    5,S              ;GET OLD BLOCK BACK
         BSR    MAPCHG           ;HOW BORING
@@ -1280,7 +1280,7 @@ LJSR    LEAS   -3,S             ;MAKE ROOM
         STU    6,S              ;PUT BACK ON STACK
         PULS   A,U              ;RESTORE
         LEAS   3,S              ;TAKE AWAY BYTEE
-        RTS      AND              ;GET THE PHUCK OUT OF HERE.
+        RTS                     ; AND GET THE PHUCK OUT OF HERE.
 *
 *BACKGROUND TERRAIN INIT
 *
@@ -1497,7 +1497,7 @@ RESET1  STA    ,X+
         CLRB 
 RAM2    TFR    D,U              ;SAVE SEED
         LDX    #0               ;GET STARTING ADDRESS INTO POINTER
-RAM3    COMB     RANDOM           ;NUMBER ROUTINE
+RAM3    COMB                    ; RANDOM NUMBER ROUTINE
         BITB   #9
         BNE    RAM4
         COMB 
@@ -1532,7 +1532,7 @@ RAM6B   EXG    X,D
         BNE    RAM3             ;NO, LOOP
         TFR    U,D              ;GET SEED
         LDX    #0               ;GET STARTING ADDRESS INTO POINTER
-RAM7    COMB     RANDOM           ;NUMBER ROUTINE
+RAM7    COMB                    ; RANDOM NUMBER ROUTINE
         BITB   #9
         BNE    RAM8
         COMB 
@@ -1604,7 +1604,7 @@ RAM17   EXG    X,D
         LEAY   -1,Y
         LBNE   RAM2             ;REPEAT TEST
         TFR    CC,B
-        TSTB     CHECK            ;AUTO CYCLE NOT FLAG  <================TEMPORARY
+        TSTB                    ; CHECK AUTO CYCLE NOT FLAG  <================TEMPORARY
         BMI    RAM17B           ;CLEAR, CONTINUE RAM TEST
         LDB    #DIABLK          ;SELECT DIAGNOSTIC BLOCK
         STB    MAPC
@@ -1617,8 +1617,8 @@ RAM17B  BITB   #$10             ;CHECK COMPREHENSIVE/INITIAL FLAG-SAVE RANDOM NU
         TFR    DP,B             ;GET BAD RAM MAP
         TSTB 
         BEQ    RAM19            ;DP <= $9E, IF ALL RAM OK
-RAM18   INCA     DP               ;<= $9F, IF (BLOCK 2 OR 3 BAD) AND 1 OK
-        LSRB     DP               ;<= $A0, IF BLOCK 1 BAD AND 2 OK
+RAM18   INCA                    ; DP <= $9F, IF (BLOCK 2 OR 3 BAD) AND 1 OK
+        LSRB                    ; DP <= $A0, IF BLOCK 1 BAD AND 2 OK
         BCS    RAM18            ;DP <= $A1, IF ONLY BLOCK 3 OK
 RAM19   TFR    A,DP             ;DP <= $A2, IF ALL BLOCKS BAD, GOOD LUCK!
         ADDA   #$1              ;SET HARDWARE STACK AT TOP OF GOOD RAM BLOCK
@@ -1644,9 +1644,9 @@ ROM1    CLR    MAPC             ;RESET WATCHDOG
         TFR    D,X              ;ADDRESS IN X
         LDY    #$800            ;SET BYTE COUNTER
         TFR    U,D              ;INITIALIZE CHECKSUM TO ROM NUMBER
-        SUBB   #(ROMMAP-2)!.$FF
+        SUBB    #(ROMMAP-2<<8&$FF00)>>8
         LSRB 
-        CLRA     CLEAR            ;CARRY
+        CLRA                    ; CLEAR CARRY
 *ADDER LOOP
 ROM2    ADCB   ,X+              ;ADD AND ROTATE CARRY
         LEAY   -1,Y             ;DECREMENT COUNTER
@@ -1747,9 +1747,9 @@ RCMOS   LDA    1,X              ;GET LSB
         ASLA 
         ASLA 
         ASLA 
-        ASLA     SHIFT            ;LS TO MSB
-        ADDA   ,S+              ;GET LSB + FIX STACK
-        RTS      BYE
+        ASLA                    ; SHIFT LS TO MSB
+        ADDA   ,S+              ; GET LSB + FIX STACK
+        RTS                     ; BYE
 *
 * READ CMOS INTO A
 *
@@ -1779,7 +1779,7 @@ RCMOSB  PSHS   A                ;SAVE A
 *
 WCMOS   PSHS   A                ;SAVE WHATS TO BE WRITTEN
         STA    1,X              ;SAVE LSB
-        LSRA     SHIFT            ;MS TO LS
+        LSRA                    ; SHIFT MS TO LS
         LSRA 
         LSRA 
         LSRA 
@@ -2167,7 +2167,7 @@ PLD20   FDB    $0000,$0000,$3900 ;1
         FDB    $0000,$3000,$3000 ;8
 PLD21   FDB    $0000,$0000,$0300 ;1
         FDB    $0000,$0000,$9600 ;2
-        FDB    $0000,$00FE,$6600 ;3
+        FDB    $0000,$00FE,$C300 ;3 ; Fixme: $C300 was $6600
         FDB    $0000,$00D6,$6600 ;4
         FDB    $0000,$0066,$6639 ;5
         FDB    $0006,$6666,$8868 ;6
@@ -2251,3 +2251,4 @@ TERX0   FDB    $1C0D,$7FE7,$7000 ;1
         FDB    RESET,IRQHK
         FDB    RESET,RESET,RESET
         PAGE 
+

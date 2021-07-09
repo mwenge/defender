@@ -1,4 +1,4 @@
-        TTL    ROMF8            ;- CONTROL AT FXXX - 12/22/80
+*       TTL    ROMF8            ;- CONTROL AT FXXX - 12/22/80
         SETDP  $A0
 *
 * SYSTEM EQUATES
@@ -6,13 +6,13 @@
 DIAORG  EQU    $C000
 DIABLK  EQU    3                ;DIAGNOSTIC BLOCK
 CMOS    EQU    $C400
-CMOS$   EQU    $C480            ;WRITE PROTECTED
+CMOSS   EQU    $C480            ;WRITE PROTECTED
 MAPC    EQU    $D000            ;FLOPPING ADDRESS
 MAPCR   EQU    $A036
 CREDIT  EQU    $A037
 CUNITS  EQU    $A038
 BUNITS  EQU    $A039
-*
+
 * CMOS RAM ALLOCATION
 *
         ORG    CMOS
@@ -35,7 +35,7 @@ CRHST6  RMB    12
 CRHST7  RMB    12
 CREDST  EQU    *                ;CREDITS BACKUP
 DIPSW   RMB    2                ;FOR DIPSW FUNCTIONS
-        ORG    CMOS$-1          ;PUT IT ACCROSS BOUNDARY
+        ORG    CMOSS-1          ;PUT IT ACCROSS BOUNDARY
 CMOSCK  RMB    2                ;FOR BOUNDARY BYTE
 REPLAY  RMB    4                ;REPLAY LEVEL
 NSHIP   RMB    2                ;NUMBER OF SHIPS/GAME
@@ -98,7 +98,7 @@ RESET1  STA    ,X+
         CLRB 
 RAM2    TFR    D,U              ;SAVE SEED
         LDX    #0               ;GET STARTING ADDRESS INTO POINTER
-RAM3    COMB     RANDOM           ;NUMBER ROUTINE
+RAM3    COMB                    ;RANDOM NUMBER ROUTINE
         BITB   #9
         BNE    RAM4
         COMB 
@@ -133,7 +133,7 @@ RAM6B   EXG    X,D
         BNE    RAM3             ;NO, LOOP
         TFR    U,D              ;GET SEED
         LDX    #0               ;GET STARTING ADDRESS INTO POINTER
-RAM7    COMB     RANDOM           ;NUMBER ROUTINE
+RAM7    COMB                    ;RANDOM NUMBER ROUTINE
         BITB   #9
         BNE    RAM8
         COMB 
@@ -205,7 +205,7 @@ RAM17   EXG    X,D
         LEAY   -1,Y
         LBNE   RAM2             ;REPEAT TEST
         TFR    CC,B
-        TSTB     CHECK            ;AUTO CYCLE NOT FLAG  <================TEMPORARY
+        TSTB                    ;CHECK AUTO CYCLE NOT FLAG  <================TEMPORARY
         BMI    RAM17B           ;CLEAR, CONTINUE RAM TEST
         LDB    #DIABLK          ;SELECT DIAGNOSTIC BLOCK
         STB    MAPCR            ;IN FLAG
@@ -219,8 +219,8 @@ RAM17B  BITB   #$10             ;CHECK COMPREHENSIVE/INITIAL FLAG-SAVE RANDOM NU
         TFR    DP,B             ;GET BAD RAM MAP
         TSTB 
         BEQ    RAM19            ;DP <= $9E, IF ALL RAM OK
-RAM18   INCA     DP               ;<= $9F, IF (BLOCK 2 OR 3 BAD) AND 1 OK
-        LSRB     DP               ;<= $A0, IF BLOCK 1 BAD AND 2 OK
+RAM18   INCA                    ;DP <= $9F, IF (BLOCK 2 OR 3 BAD) AND 1 OK
+        LSRB                    ;DP <= $A0, IF BLOCK 1 BAD AND 2 OK
         BCS    RAM18            ;DP <= $A1, IF ONLY BLOCK 3 OK
 RAM19   TFR    A,DP             ;DP <= $A2, IF ALL BLOCKS BAD, GOOD LUCK!
         ADDA   #$1C             ;SET HARDWARE STACK AT TOP OF GOOD RAM BLOCK
@@ -270,7 +270,7 @@ ROM8    CMPX   #0               ;CHECK CHECKSUM
         LDA    #DIABLK          ;SELECT DIAGNOSTIC BLOCK
         STA    MAPCR            ;IN FLAG
         STA    MAPC
-        RTS      RETURN           ;TO COMPREHENSIVE DIAGNOSTICS
+        RTS                     ;RETURN TO COMPREHENSIVE DIAGNOSTICS
 ROM9    LEAU   1,U
         CMPU   #ROMMAP+24
         BNE    ROM1
@@ -279,7 +279,7 @@ ROM9    LEAU   1,U
         BEQ    IDIS1            ;DISPLAY INITIAL ROM OK
         LDA    #DIABLK          ;SELECT DIAGNOSTIC BLOCK
         STA    MAPC
-        RTS      RETURN           ;TO COMPREHENSIVE DIAGNOSTICS
+        RTS                     ;RETURN TO COMPREHENSIVE DIAGNOSTICS
 *
 * INITIAL TEST RESULTS DISPLAY
 *
@@ -524,9 +524,9 @@ RCMOS   LDA    1,X              ;GET LSB
         ASLA 
         ASLA 
         ASLA 
-        ASLA     SHIFT            ;LS TO MSB
+        ASLA                    ;SHIFT LS TO MSB
         ADDA   ,S+              ;GET LSB + FIX STACK
-        RTS      BYE
+        RTS                     ;BYE
 *
 * READ CMOS INTO A
 *
@@ -556,7 +556,7 @@ RCMOSB  PSHS   A                ;SAVE A
 *
 WCMOS   PSHS   A                ;SAVE WHATS TO BE WRITTEN
         STA    1,X              ;SAVE LSB
-        LSRA     SHIFT            ;MS TO LS
+        LSRA                    ;SHIFT MS TO LS
         LSRA 
         LSRA 
         LSRA 
@@ -610,7 +610,7 @@ LJSR    LEAS   -3,S             ;MAKE ROOM
         STU    6,S              ;PUT BACK ON STACK
         PULS   A,U              ;RESTORE
         LEAS   3,S              ;TAKE AWAY BYTEE
-        RTS      AND              ;GET THE PHUCK OUT OF HERE.
+        RTS                     ;AND GET THE PHUCK OUT OF HERE.
 *
 * ROM ADDRESS MAP - ONE BYTE EVERY 2K
 *                   FIRST 2 BYTES FOR ROM1,

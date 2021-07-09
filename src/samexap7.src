@@ -1,7 +1,6 @@
-        NLIST
-        INCLUDE  PHR6.SRC
-        LIST 
-        TTL    D                ;E F E N D E R    1.0    SAMEXAP7.SRC
+        ;NLIST
+        ;LIST 
+        ;TTL D E F E N D E R    1.0    SAMEXAP7.SRC
 *****************************************************
 *
 *    SAM EXPLOSIONS AND APPEARANCES
@@ -111,7 +110,7 @@ EXST5   STY    LSEXPL           ;SAVE LAST EXPLOSION RAM ALLOCA
         LDD    CENTMP           ;GET CENTER
         BRA    EXST7            ;USE IT
 EXST6   LDD    ,U               ;GET PICTURE WIDTH, HEIGHT
-        LSRA     DIVIDE           ;BY 2
+        LSRA                    ;DIVIDE BY 2
         LSRB 
         ADDD   TOPLFT,Y         ;ADD TO TOP LEFT
 EXST7   STD    CENTER,Y         ;SAVE EXPLOSION CENTER
@@ -243,18 +242,18 @@ EXPN3   STX    ODDEVN
         LDD    CENTER,Y         ;GET EXPANSION CENTER
         SUBD   TOPLFT,Y         ;SUBTRACT TOP LEFT ADDRESS
         STA    XOFF             ;SAVE X OFFSET
-        LSRB     DIVIDE           ;Y OFFSET BY TWO
+        LSRB                    ;DIVIDE Y OFFSET BY TWO
         STB    YOFF             ;SAVE Y OFFSET
         ROL    FLAVOR           ;SAVE FLAVOR
         LDA    SIZE             ;GET SIZE
         LDB    XOFF             ;GET X OFFSET
-        MUL      MULTIPLY
+        MUL                     ;MULTIPLY
         STD    XSTART           ;SAVE X OFFSET * SIZE
         LDB    CENTER,Y         ;GET X COMPONENT OF CENTER
         CLRA 
         SUBD   XSTART           ;SUBTRACT X OFFSET * SIZE
         STD    XSTART           ;SAVE X STARTING POSITION
-EXPN4   TSTA     CHECK            ;IF ON SCREEN
+EXPN4   TSTA                    ;CHECK IF ON SCREEN
         BEQ    EXPN5            ;YES?, CONTINUE
         LDD    DATPTR           ;GET DATA POINTER
         ADDB   LENGTC           ;SKIP FIRST COLUMN
@@ -270,10 +269,10 @@ EXPN4   TSTA     CHECK            ;IF ON SCREEN
 EXPN5   CMPB   #$98             ;CHECK IF OFF SCREEN
         LBHI   DONE             ;YES?, QUIT
         LDA    SIZE             ;GET SIZE
-        ASLA     MULTIPLY         ;BY 2
+        ASLA                    ;MULTIPLY BY 2
         STA    DSIZE            ;SAVE DOUBLE SIZE
         LDB    YOFF             ;GET Y OFFSET
-        MUL      MULTIPLY
+        MUL                     ;MULTIPLY
         STD    YSTART           ;SAVE Y OFFSET * DOUBLE SIZE
         LDB    CENTER+1,Y       ;GET Y COMPONENT OF CENTER
         CLRA 
@@ -281,7 +280,7 @@ EXPN5   CMPB   #$98             ;CHECK IF OFF SCREEN
         SUBB   FLAVOR           ;SUBTRACT FLAVOR
         ADCA   #0
         CLR    YSKIP            ;ZERO Y SKIP COUNTER
-EXPN6   TSTA     CHECK            ;IF ON SCREEN
+EXPN6   TSTA                    ;CHECK IF ON SCREEN
         BNE    EXPN7            ;NOT YET?, FIND FIRST Y BLOCK
         CMPB   #$2A             ;CHECK IF IN SCANNER
         BHS    EXPN8            ;NO?, CONTINUE
@@ -303,7 +302,7 @@ EXPN8   STD    YSTART           ;SAVE Y STARTING POSITION
         LDA    XSTART+1         ;GET X SCREEN POSITION
 * MAIN LOOP
 EXPN9   LDB    YSKIP            ;GET Y SKIP
-        ABX      ADD              ;TO DATA POINTER
+        ABX                     ;ADD TO DATA POINTER
         LDB    YSTART+1         ;GET Y SCREEN POSITION
         JMP    [VSTART]         ;JUMP TO WRITING
 STRTEF  STD    ,--U             ;SAVE ON ERASE TABLE

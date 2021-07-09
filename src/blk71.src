@@ -1,6 +1,6 @@
-        TTL    D                ;E F E N D E R   1.0
-        NMLIST
-        NOGEN
+*       TTL  D E F E N D E R   1.0
+*       NMLIST
+*       NOGEN
 ***********************************************************
 *
 *    TERRAIN , MINI-TERRAIN DATA
@@ -147,6 +147,7 @@ TGEN10  STX    ,Y++
         CMPY   #STBL+$130
         BNE    TGEN10
         RTS  
+
 *********************************************************
 *
 * TERRAIN OUTPUT ROUTINE
@@ -187,7 +188,7 @@ TTER08  LDD    BGL
         BNE    TTER02
         LDS    TTBLP1           ;CHANGE TO FLAVOR 1
 TTER02  LDA    #$98
-TTER03  STX    [,Y]             ;FAST OUTPUT
+TTER03  FCB    $11,$53          ;Fixme was: STX    [,Y]             ;FAST OUTPUT
         PULS   B,U
         STD    ,Y
         STU    [,Y++]
@@ -403,7 +404,7 @@ ALTT5   JSR    RFONR1           ;NEXT BIT
 *
 BGERAS  LDX    #0               ;ZERO
         LDY    #STBL            ;ERASE TABLE START
-ERAS1   STX    [Y++]            ;ERASE AT TABLE
+ERAS1   STX    [,Y++]            ;ERASE AT TABLE
         CMPY   #STBL+$130       ;DONE?
         BNE    ERAS1
         RTS  
@@ -607,7 +608,7 @@ PINIT3  PSHS   D                ;SAVE ABSOLUTE VELOCITY
         BPL    PINIT4           ;FIND ABSOLUTE Y VELOCITY
         COMA 
         COMB 
-PINIT4  LSRA     DIVIDE           ;BY 2
+PINIT4  LSRA                    ;DIVIDE BY 2
         RORB 
         ADDD   ,S++             ;ADD TO ABSOLUTE X VELOCITY
         CMPD   #$016A           ;CHECK FOR CORNERS
@@ -645,10 +646,10 @@ PX2     LDU    ,Y               ;ERASE OLD PIECE
         BHI    PX7              ;OFF SCREEN, NEXT PIECE
         STD    PXPOST,Y         ;SAVE NEW X POSITION
         STA    ,Y               ;UPDATE X SCREEN ADDRESS
-        TSTB     CHECK            ;LEFT OR RIGHT FLAVOR
+        TSTB                    ;CHECK LEFT OR RIGHT FLAVOR
         BMI    PX6
         LDD    #$BBBB           ;LEFT FLAVOR
-        STD    [Y]
+        STD    [,Y]
         BRA    PX7
 PX6     LDU    ,Y
         LDD    #$0B0B           ;RIGHT FLAVOR

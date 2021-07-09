@@ -3,7 +3,7 @@
 *
         ORG    $D000
         FCB    $4A              ;CKBYT CHECKSUM(ACTUAL)
-        SETDP  RAM!>8
+        SETDP  RAM>>8
 *
 *SLEEP
 *A=SLEEP TIME X 16MSEC
@@ -46,7 +46,7 @@ KILP3   STD    ,X
         PULS   D,U,PC
 KILPLP  LDU    ,U
         BNE    KILP1
-ERROR   NOP      ERROR            ;TRAP
+ERROR   NOP                     ; ERROR TRAP
         JMP    SINIT
 *
 *MAKE A SUPER PROCESS
@@ -128,10 +128,10 @@ GETOB   PSHS   U,D
         LDX    OFREE
         BNE    GETOB1           ;NOT OUT
         JSR    ERROR
-GETOB1  LDD    OLINK,X
+GETOB1  LDD    ,X               ;Fixmme: fix asm6809, was OLINK,X          
         STD    OFREE
         LDD    OPTR
-        STD    OLINK,X
+        STD    ,X               ;Fixme: fixasm6809: was OLINK,X
         CLRD 
         STD    OBJX,X
         STA    OTYP,X           ;CLEAR TYPE
@@ -553,10 +553,10 @@ SCRTR0  PSHS   A
         DECA 
         BNE    SCT1
         LDX    #P1DISP
-        LDU    #.P1SCR+1
+        LDU    #P1SCR+1
         BRA    SCT2
 SCT1    LDX    #P2DISP
-        LDU    #.P2SCR+1
+        LDU    #P2SCR+1
 SCT2    CLR    XTEMP            ;BLANKING FLAG
         LDB    #6
         LDA    MAPCR
@@ -602,7 +602,7 @@ SCT4    LEAX   DIGLTH,X
 HSRES   LDA    STATUS
         BPL    SLAMX
         JSR    MAPCH3
-        JSR    RHSTD$           ;RESET TODAYS HIGH SCORES
+        JSR    RHSTDS           ;RESET TODAYS HIGH SCORES
         INC    HSRFLG           ;SET HIGH SCORE RESET FLAG
         BRA    SLAMX
 *
@@ -626,15 +626,15 @@ SLAMX   JMP    SUCIDE
 *COIN SWITCHES
 *LEFT
 LCOIN   LDX    #LCCNT
-        LDB    #LCOINV!.$FF
+        LDB    #(LCOINV<<8&$FF00)>>8
         BRA    COIN
 *RIGHT
 RCOIN   LDX    #RCCNT
-        LDB    #RCOINV!.$FF
+        LDB    #(RCOINV<<8&$FF00)>>8
         BRA    COIN
 *CENTER
 CCOIN   LDX    #CCCNT
-        LDB    #CCOINV!.$FF
+        LDB    #(CCOINV<<8&$FF00)>>8
 *
 *COIN ROUTINE
 *X=DEBOUNCE COUNTER
@@ -645,7 +645,7 @@ COIN    LDA    SLMCNT
         BNE    SLAMX
         LDA    #$16             ;DEBOUNCE TIME
         STA    ,X
-        LDA    #LCOINV!>8       ;ROUTINE ADDR
+        LDA    #LCOINV>>8       ;ROUTINE ADDR
         STD    PD2,U
         NAP    10,CN1
 CN1     LDA    SLMCNT
@@ -831,14 +831,14 @@ CSCX    RTS
 *DISPLAY LASERS
 *
 LDISP   PSHS   D,X,Y,U          ;PLAYER 1
-        LDX    #P1LAS
-        LDA    .P1LAS
+        LDX    #P1LAT           ;Fixme was: #P1LAS
+        LDA    P1LAS
         BSR    LDSP
         LDA    PLRCNT
         DECA 
         BEQ    LDPX
-        LDX    #P2LAS
-        LDA    .P2LAS
+        LDX    #P2LAT
+        LDA    P2LAS
         BSR    LDSP
 LDPX    PULS   D,X,Y,U,PC
 LDSP    CMPA   #5               ;MAX DISPLAY
@@ -876,13 +876,13 @@ TD1     JSR    SCRTR0
 *
 SBDISP  PSHS   X,Y,D,U
         LDX    #P1SBD
-        LDA    .P1SBC
+        LDA    P1SBC
         BSR    SBDSP
         LDA    PLRCNT
         DECA 
         BEQ    SBDX
         LDX    #P2SBD
-        LDA    .P2SBC
+        LDA    P2SBC
         BSR    SBDSP
 SBDX    PULS   X,Y,D,U,PC
 SBDSP   CMPA   #3
@@ -935,7 +935,7 @@ PLINDX  PSHS   A
 PLND1   LDX    #PLDATA
         DECA 
         BEQ    PLINX
-        LDX    #.P2SCR
+        LDX    #P2SCR
 PLINX   PULS   A,PC
 PLDX    PSHS   A
         BRA    PLND1
@@ -969,7 +969,7 @@ PIATAB  FCB    $C0,$FF,$00,$00  ;DDR0-3
 *
 SINIT   ORCC   #$FF             ;NO INTERRUPTS YET PLEASE
         LDS    #HSTK            ;ONLY SETUP HARDWARE STACK
-        LDA    #RAM!>8          ;SETUP DIRECT PAGE
+        LDA    #RAM>>8          ;SETUP DIRECT PAGE
         TFR    A,DP
         CLR    MAPC
 * PIAS INITIALIZED HERE.
@@ -1012,7 +1012,7 @@ INIT12  STB    CREDIT           ;INTO RAM
         STD    PIA01            ;COINS STUCK
         JSR    P1SW             ;UPRIGHT SCREEN
         JSR    MAPCH3
-        JSR    RHSTD$           ;SETUP TODAYS GREATS
+        JSR    RHSTDS           ;SETUP TODAYS GREATS
         BSR    PINIT            ;INIT PROCESSES
         BSR    INIT20           ;MISC ROUTINES
         JSR    INIT             ;INIT TEXT
@@ -1142,9 +1142,9 @@ START1  CLR    ,X+
         LDX    #NSHIP
         JSR    RCMOSA
         ANDA   #$F
-        STA    .P1LAS
+        STA    P1LAS
         LDB    #10
-        STD    .P1SBC           ;10-->.P1TRG ALSO PATCH 2
+        STD    P1SBC           ;10-->P1TRG ALSO PATCH 2
         CLR    BUNITS
         NOP  
         LDX    #PLDATA
@@ -1152,12 +1152,12 @@ START1  CLR    ,X+
         LDX    #REPLAY
         JSR    RCMOSD
         STD    REPLA
-        STD    .P1RP
-        CLR    .P1RP+2
+        STD    P1RP
+        CLR    P1RP+2
         LDX    #PLDATA
 STTRAN  LDA    ,X+              ;COPY INTO SECOND PLAYER
         STA    PLDLEN-1,X
-        CMPX   #.P1END
+        CMPX   #P1END
         BNE    STTRAN
         NEWP   PLSTRT,STYPE     ;START PLAYER GOING
 START2  INC    PLRCNT
@@ -1271,7 +1271,7 @@ PLSTR5  CLRA
         STD    PLAXC
         LDD    #$2000
         STD    PLAX16
-        LDD    #$2000!>2
+        LDD    #$2000>>2        ; Was $2000!>2
         ADDD   BGL
         STD    PLABX
         LDD    #$8000
@@ -1316,7 +1316,7 @@ PLS1    JSR    PLRES
 *
 *TERRAIN STATUS UPDATE
 *
-STCHK   CLRB     CHECK            ;TERRAIN ACTIVE
+STCHK   CLRB   ;  CHECK TERRAIN ACTIVE
 STCHK0  LDA    ASTCNT
 STCHKA  BNE    STCHK1
         ORB    #2
@@ -1441,9 +1441,9 @@ WCTAB   FCB    $81,$28,$07,$16,$2F,$84,$15,0
 *
 MONO    PSHS   U,X,D            ;SAVE REGISTERS
         JSR    MAPCH2           ;SELECT MAP
-        LDD    OBJW,Y           ;GET PICTURE SIZE
-        STD    OBJW,U           ;COPY TO MONO DESCRIPTOR
-        MUL      COMPUTE          ;NUMBER OF BYTES
+        LDD    ,Y               ;Fixme,fixasm6809: was OBJW,Y           ;GET PICTURE SIZE
+        STD    ,U               ;Fixme,fixasm6809: was OBJW,U           ;COPY TO MONO DESCRIPTOR
+        MUL                     ; COMPUTE NUMBER OF BYTES
         LEAX   OBJL,U           ;GET START OF MONO DATA ADDRESS
         STX    OBJP0,U          ;SAVE IN MONO DESCRIPTOR
         LEAX   D,X              ;ADD NUMBER OF BYTES OF ONE IMAGE
@@ -1484,7 +1484,7 @@ MONO5   ANDA   #$BB             ;CHANGE COLOR TO $B
         STD    ,U++             ;SAVE TWO BYTES MONO, ADVANCE POINTER
         CMPU   4,S              ;CHECK FOR END OF OBJECT
         BLO    MONO1            ;NO?, CONTINUE
-        RTS      YES?,            ;RETURN
+        RTS                     ; YES?, RETURN
 *
 *SAVE PLAYER STATE
 *
@@ -1852,7 +1852,7 @@ GETWV   PSHS   X,U,D
         JSR    RCMOSA
         STA    XTEMP
         LDX    2,S              ;GET BACK X
-        TSTA     ZERO             ;CASE TRAP OUT
+        TSTA                    ; ZERO CASE TRAP OUT
         BEQ    GTWV01
         LDA    PWAV,X
 *NEW ASTROS
@@ -1929,7 +1929,7 @@ WDL     LEAY   1,Y              ;STEP THRU
 *INTERRUPT ROUTINE
 *
 IRQ     CLR    MAPC
-        LDA    #RAM!>8
+        LDA    #RAM>>8
         TFR    A,DP
         LDA    #4
         STA    PIA1+1
@@ -2006,7 +2006,7 @@ IRQX    ORCC   #$FF
 *INVERTED IRQ FOR SCREEN FLIP
 *
 IRQB    CLR    MAPC
-        LDA    #RAM!>8
+        LDA    #RAM>>8
         TFR    A,DP
         LDA    #4
         STA    PIA1+1
@@ -2104,7 +2104,7 @@ STOUT   LDA    STATUS
         LDD    BGLX
         ANDB   #$80
         SUBD   ITEMP
-        ASLB     GET              ;DELTA
+        ASLB                    ; GET DELTA
         ROLA 
 *
 *STAR OUTPUT
@@ -2120,7 +2120,7 @@ STOUT   LDA    STATUS
         COMB 
 STOUT0  STB    ITEMP2
         CLRA 
-        STA    [0,X]
+        FCB    $A7,$94         ; Fixme: Was STA    [0,X]
         STA    [4,X]
         STA    [8,X]
         STA    [12,X]
@@ -2347,7 +2347,7 @@ PLAYER  LDA    STATUS           ;ATTRACT?
         ADDD   #1               ;NEGD
         BPL    PL00
         COM    ITEMP            ;SIGN EXTEND
-PL00    ASLB   SHIFT
+PL00    ASLB                    ; SHIFT
         ROLA 
         ASLB 
         ROLA 
@@ -2383,11 +2383,11 @@ PLAY1   LDD    PLAXV            ;GET 5 BIT VELOCITY
         LDA    PLADIR           ;+DIR?
         BMI    PV1              ;NO
         LDA    #$20             ;+BASE
-        TSTB   +VEL?
+        TSTB                    ;+VEL?
         BMI    PV1A             ;NO
         BRA    PV2
 PV1     LDA    #$70             ;-BASE
-        TSTB   -VEL?
+        TSTB                    ; -VEL?
         BMI    PV2              ;YES
 PV1A    CLR    PCX+1
         CLR    PCX
@@ -2537,7 +2537,7 @@ OPON    LDB    OY16,X           ;CAN WE WRITE
         CMPA   #$9C
         BHI    OPLP
         SUBA   OBJW,Y
-        ASLB     SAVE             ;PHASE
+        ASLB                   ; SAVE  PHASE
         LDB    OY16,X
         STD    OBJX,X           ;STORE NEW COORDES
         JSR    [OBJWRT,Y]
@@ -2592,7 +2592,7 @@ GETSHL  PSHS   D,Y,U
         LDD    OLINK,X
         STD    OFREE
         LDD    SPTR
-        STD    OLINK,X
+        STD    ,X               ;Fixme,fixasm6809: was OLINK,X
         INC    BMBCNT           ;KICK COUNTER
         STX    SPTR             ;LINK HIM IN
         PULS   D,Y,U,PC
@@ -2780,7 +2780,7 @@ LCOL    PSHS   U,D
         STA    MAPCR
         STA    MAPC
         PULS   D
-        NOP    PATCH            ;SPACE DECB FOR 3 WIDE
+        NOP                     ; PATCH SPACE DECB FOR 3 WIDE
         NOP  
         NOP  
         LDU    #LASP1
@@ -2922,7 +2922,7 @@ COL1    LDD    OBJX,X
         BHI    IC1              ;CHECK INTERSECTION
 COLLP   LDX    OLINK,X
         BNE    COL1
-        RTS      RET              ;EQ
+        RTS                     ; RET EQ
 *
 *COMPARE FOR PICTURE INTERSECTION
 *FIND UPPERMOST
@@ -2930,7 +2930,7 @@ IC1     STU    CTEMP2           ;SAVE PLAYER DESC
         LDY    OPICT,X
         SUBD   ,Y               ;SAVE OBJX FROM IRQ
         STD    XTEMP
-        CLRD     CLEAR            ;OFFSETS
+        CLRD                    ;CLEAR OFFSETS
         STD    OX1              ;GET OBJECT
         STD    PX1              ;PLAYER
         LDD    XTEMP
@@ -2953,12 +2953,12 @@ IC3     LDD    XTEMP            ;GET OBJX
         ADDD   OBJW,Y
         SUBB   LRY
         BHI    IC4              ;OBJECT LOWEST
-        CLRB     PLAYER           ;LOWEST
+        CLRB                    ; PLAYER LOWEST
 *FIND RIGHTMOST
 *CALC OX2
 IC4     SUBA   LRX
         BHI    IC40             ;OBJECT RIGHTMOST
-        CLRA     PLAYER           ;RIGHTMOST
+        CLRA                    ; PLAYER RIGHTMOST
 *CALC X,Y COUNT
 IC40    STD    CTEMP            ;SAVE
         LDD    OBJW,Y           ;GET WIDTH,HEIGHT
@@ -3008,7 +3008,7 @@ FC2     ADDB   OBJH,U           ;CORRECT OVER SUBTRACT
         STY    CENTMP           ;SCREEN COLLISION ADDR
         JSR    [OCVECT,X]
         LDA    #1
-        RTS      HIT
+        RTS                     ; HIT
 IC6     DECB 
         BPL    IC50             ;NOT FINISHED COLUMN
         LDD    OBHT             ;GET OBHT,PLHT
@@ -3046,7 +3046,7 @@ COLTAB  FCB    $38,$39,$3A,$3B,$3C
 EXEC    LDX    #ACTIVE
         STX    CRPROC
 EXEC0   LDA    TIMER
-        BEQ    EXEC0
+        FCB    $11,$13           ;Fixme was BEQ    EXEC0
         CLR    TIMER
         LDB    STATUS
         BITB   #$7D
@@ -3076,7 +3076,7 @@ EXEC02  LDX    ,Y
         LEAY   ,X
         BRA    EXEC02
 EXEC03  LDU    ,X
-        STU    Y
+        STU    ,Y
         LDD    SEED
         ANDA   #$3F
         ADDA   #$60
@@ -3373,3 +3373,4 @@ ISCLP   LEAY   ,X
         BNE    ISC1
         RTS  
         FCB    $40              ;CKBYT CSUM E800-EFFF(ACTUAL)
+

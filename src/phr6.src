@@ -1,6 +1,6 @@
-        TTL     D                ;E F E N D E R    1.0
-        NMLIST
-        NOGEN
+*       TTL     ; D E F E N D E R    1.0
+*       NMLIST
+*       NOGEN
 *
 *      RAM DECLARATIONS AND CONSTANTS
 *
@@ -24,7 +24,7 @@ YMIN    EQU    42               ;MIN Y COORD
 *TERRAIN,PLAYER EXPLOSION,WAVE TABLE
 BGINIT  EQU    $C000
 BGOUT   EQU    $C003
-ALINITQ  EQU    $C006            ;ALTITUDE INIT
+ALINIT  EQU    $C006            ;ALTITUDE INIT
 BGERAS  EQU    $C009            ;HYPER ROUTINE
 PXVCT   EQU    $C00E            ;PLAYER EXPLOSION
 WVTAB   EQU    $C011            ;WAVE DATA TABLE
@@ -62,7 +62,7 @@ VCROM0  EQU    $C027            ;FAILURE MODES
 VRAM10  EQU    $C02A
 VRAM20  EQU    $C02D
 VOUND0  EQU    $C030
-RHSTD$  EQU    $C033            ;RESET TODAYS GREATS
+RHSTDS  EQU    $C033            ;RESET TODAYS GREATS
 *
 *ATTRACT MODE VECTORS
 *BLK 1
@@ -153,8 +153,8 @@ P2SBD   EQU    $8B1B
 P1DISP  EQU    $0F1C            ;TOP LEFT PLAYER 1
 P2DISP  EQU    $711C            ;TOP LEFT PLAYER 2
 DIGLTH  EQU    4*256            ;DIGIT LENGTH
-P1LAS   EQU    $0F14
-P2LAS   EQU    $7114
+P1LAT   EQU    $0F14
+P2LAT   EQU    $7114
 SCANH   EQU    YMIN-34          ;SCANNER HEIGHT
 SCANER  EQU    $3000+SCANH      ;SCANNER
 *
@@ -430,7 +430,7 @@ FISEND  EQU    *
 *THRUST TABLE
 *
 HSRFLG  EQU    *                ;HIGH SCORE RESET FLAG(ATTRACT MODE)
-THTAB   RMB    64
+THTAB   RMB    64 
 THTEND  EQU    *
 *FIREBALL TABLE
 FBTAB   RMB    32
@@ -439,30 +439,30 @@ FBTEND  EQU    *
 *PLAYER DATA TABLE
 *
 PLDATA  EQU    *
-.P1SCR  RMB    4                ;SCORE MSB 1ST
-.P1RP   RMB    3                ;NEXT REPLAY LEVEL
-.P1LAS  RMB    1                ;#OF LASERS
-.P1WAV  RMB    1                ;WAVE # IN HEX
-.P1SBC  RMB    1                ;SMART BOMBS
-.P1TRG  RMB    1                ;ASTRONAUTS
-.P1ENM  RMB    50               ;ENEMY STATE
-.P1END  EQU    *
-.P2SCR  RMB    4
-.P2RP   RMB    3
-.P2LAS  RMB    1
-.P2WAV  RMB    1
-.P2SBC  RMB    1
-.P2TRG  RMB    1
-.P2ENM  RMB    50
+P1SCR  RMB    4                ;SCORE MSB 1ST
+P1RP   RMB    3                ;NEXT REPLAY LEVEL
+P1LAS  RMB    1                ;#OF LASERS
+P1WAV  RMB    1                ;WAVE # IN HEX
+P1SBC  RMB    1                ;SMART BOMBS
+P1TRG  RMB    1                ;ASTRONAUTS
+P1ENM  RMB    50               ;ENEMY STATE
+P1END  EQU    *
+P2SCR  RMB    4
+P2RP   RMB    3
+P2LAS  RMB    1
+P2WAV  RMB    1
+P2SBC  RMB    1
+P2TRG  RMB    1
+P2ENM  RMB    50
 PLDEND  EQU    *                ;END OF PLAYER DATA
-PLDLEN  EQU    .P1END-PLDATA
-PSCOR   EQU    .P1SCR-PLDATA
-PRPLA   EQU    .P1RP-PLDATA
-PLAS    EQU    .P1LAS-PLDATA
-PWAV    EQU    .P1WAV-PLDATA
-PSBC    EQU    .P1SBC-PLDATA
-PTARG   EQU    .P1TRG-PLDATA
-PENEMY  EQU    .P1ENM-PLDATA
+PLDLEN  EQU    P1END-PLDATA
+PSCOR   EQU    P1SCR-PLDATA
+PRPLA   EQU    P1RP-PLDATA
+PLAS    EQU    P1LAS-PLDATA
+PWAV    EQU    P1WAV-PLDATA
+PSBC    EQU    P1SBC-PLDATA
+PTARG   EQU    P1TRG-PLDATA
+PENEMY  EQU    P1ENM-PLDATA
 *
 *MASTER OBJECT LIST
 *
@@ -497,9 +497,9 @@ OLEND   EQU    *
 *
 *USER DEFINED PROCESS TYPES
 *
-STYPE   EQU    0                ;SYSTEM PROCESS
-ATYPE   EQU    1
-CTYPE   EQU    2
+STYPE   EQU    $00                ;SYSTEM PROCESS
+ATYPE   EQU    $01
+CTYPE   EQU    $02
 *
 *SLEEPING PROCESS TABLE
 *
@@ -534,9 +534,9 @@ SPTEND  EQU    *
 *STAR DATA STRUCTURE
 *
 SMAP    EQU    *
-.SX     RMB    1
-.SY     RMB    1                ;X,Y COORDS
-.SCOL   RMB    1
+SSX     RMB    1
+SSY     RMB    1                ;X,Y COORDS
+SSCOL   RMB    1
         RMB    1                ;WASTER
 SNUM    EQU    16
 SLGTH   EQU    4
@@ -544,8 +544,8 @@ SLGTH   EQU    4
 SMEND   EQU    *
 *OFFSET CONSTANTS
 SX      EQU    0
-SY      EQU    .SY-.SX
-SCOL    EQU    .SCOL-.SX
+SY      EQU    SSY-SSX
+SCOL    EQU    SSCOL-SSX
 *
 *MONOCHROME TABLE
 *
@@ -573,24 +573,24 @@ THSTAB  RMB    12*8             ;TODAYS
 *
 *M A C R O S
 *
-SHL     MACRO  \0,\1,\2
+SHL     MACRO  \1,\2,\3
         JSR    GETSHL
-        FDB    \0,\1,\2
+        FDB    \1,\2,\3
         ENDM 
-KILP    MACRO  \0,\1
+KILP    MACRO  \1,\2
         JSR    KILPOS
-        FDB    $\0
         FDB    \1
+        FDB    \2
         ENDM 
-KILO    MACRO  \0,\1
+KILO    MACRO  \1,\2
         JSR    KILOS
-        FDB    $\0
         FDB    \1
+        FDB    \2
         ENDM 
 *INIT OBJECT
-OBI     MACRO  \0,\1,\2
+OBI     MACRO  \1,\2,\3
         JSR    OBINIT
-        FDB    \0,\1,\2
+        FDB    \1,\2,\3
         ENDM 
 CLRD    MACRO
         CLRA 
@@ -601,34 +601,35 @@ DIE     MACRO
         JMP    SUCIDE           ;DIE!
         ENDM 
 *
-NAP     MACRO  \0,\1
-        LDA    #\0              ;TIME
-        LDX    #\1              ;WAKEUP ADDR
+NAP     MACRO  \1,\2
+        LDA    #\1              ;TIME
+        LDX    #\2              ;WAKEUP ADDR
         JMP    SLEEP
         ENDM 
+
 *
 *MAKE A NEW PROCESS
 *
-NEWP    MACRO  \0,\1
-        LDX    #\0              ;ADDR
-        LDA    #\1              ;TYPE
+NEWP    MACRO  \1,\2
+        LDX    #\1              ;ADDR
+        LDA    #\2              ;TYPE
         JSR    MKPROC
         ENDM 
 *
 *OBJECT OFF MACRO
 *
-OBJOFF  MACRO  \0
+OBJOFF  MACRO  \1
         IFEQ   NARG-1
-        LDY    #\0
+        LDY    #\1
         ENDC 
         JSR    COFF
         ENDM 
 *
 *OBJECT  ON MACRO
 *
-OBJON   MACRO  \0
+OBJON   MACRO  \1
         IFEQ   NARG-1
-        LDY    #\0
+        LDY    #\1
         ENDC 
         JSR    CWRIT
         ENDM 
