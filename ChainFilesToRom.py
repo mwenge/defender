@@ -14,8 +14,10 @@ if len(sys.argv) < 2:
 romname = sys.argv[1]
 rom = open(romname, 'wb')
 
-rom_data = bytearray([0xff] * 0xFFFF)
-for a in sys.argv[2:]:
+romlength = int(sys.argv[2],16)
+
+rom_data = bytearray([0xff] * romlength)
+for a in sys.argv[3:]:
     args = a.split(',')
     fn = args[0]
     nm = args[-1:]

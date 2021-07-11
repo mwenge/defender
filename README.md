@@ -15,7 +15,7 @@ The source code can be compiled into an executable that you can run it in Window
   * [Build the assembler toolchain](#build-the-assembler-toolchain)
   * [Build Defender](#build-defender)
 * [Play Defender](#play-defender)
-* [Notes on the Source Code](#notes-on-the-source-code)
+* [Notes on the Source Code, ROM Files, and the Physical Circuit Boards](#notes-on-the-source-code-rom-files-and-the-physical-circuit-boards)
 
 <!-- vim-markdown-toc -->
 ## Build Instructions
@@ -48,27 +48,39 @@ cd ..
 
 ### Build Defender
 
-To build the rom image `defender.rom`:
+To build the rom image `defender.rom` that is embedded in the [Williams Arcade
+Classics]() release of [`defender.exe`] (orig/WilliamsArcadeClassics):
 ```sh
-make defender
+make defender.rom
 ```
+
+To build the Red Label rom files (see below for more information on what these are), do:
+```sh
+make redlabel
+```
+These will get written to a directory called `redlabel`.
 
 ## Play Defender
 
 Coming soon.
 
-## Notes on the Source Code
+## Notes on the Source Code, ROM Files, and the Physical Circuit Boards
 
-The source code in [src](src) was originally retrieved from https://github.com/historical-source/defender. It is
-the code for the 'Red Label' version of the game. There were four versions of the game released: White Label, Blue Label,
-Green Label, and Red Label; in that order. Each release was a circuit board with the compiled code split across a 
-number of different ROM chip. This image of the Red Label ROM board from [Scott Tunstall's site](https://www.robotron-2084.co.uk/techwilliamshardwareid.html)
-gives you an idea of what such a board looks like:
+The source code in [src](src) was originally retrieved from
+https://github.com/historical-source/defender. It is the code for the 'Red
+Label' version of the game. There were four versions of the game released:
+White Label, Blue Label, Green Label, and Red Label, in that order. Each
+release was a circuit board with the compiled code split across a number of
+different ROM chips, also referred to as 'ICs'. This image of the Red Label ROM
+board from [Scott Tunstall's
+site](https://www.robotron-2084.co.uk/techwilliamshardwareid.html) gives you an
+idea of what such a board looks like:
 
-<img src="orig/D8572.jpg" size=250>
+<img src="orig/D8572.jpg" size=250> <img src="orig/RedLabelROMBoardSchema.png" size=250>
 
-If you compare this image to [the file listing for the Red Label roms](orig/defender-redlabel) you'll notice that the missing chip on the board corresponds
-to a missing file `defend.5`:
+If you compare this image to [the file listing for the Red Label
+roms](orig/defender-redlabel) you'll notice that the missing chip on the board
+corresponds to a missing file `defend.5`:
 ```sh
 [robert@mwenge-desktop defender-redlabel (master)]$ ls -al
 total 64
@@ -96,7 +108,7 @@ chart lists the part numbers for each chip and confirms that IC5 (i.e. `defend.5
 
 <img src="orig/RedLabelRomChart.png" size="300">
 
-When we assemble the Defender source with `make roms` we create a bunch of
+When we assemble the Defender source with `make redlabel` we create a bunch of
 object files and then split them across the 11 files to match the 11 in the Red
 Label ROM dump listing above.
 
@@ -196,6 +208,27 @@ the ROM, meaning that one will overwrite the other. This explains why the main g
 twice, once with attract mode (`amode1.src`) and once without: they wanted a binary with some segments
 overwritten with attract mode features and one without. We achieve this ourselves by modifying the source
 to compile and place the attract mode code to position `$2000` in memory, and when we later split the
-object files into the `defend[x].bin` files pick the chunk of code we're interested in.
+object files into the `defend.x` files pick the chunk of code we're interested in.
 
+This table shows how the contents of each ROM chip relates back to the compiled code.
+
+ROM Chip| Part Number|File Name|Build Binary|Start Position in Build Binary|End Position in Build Binary
+| --- | --- | --- | --- | --- | --- |
+IC1|A5343-09636 |defend.1|bin/defa7-defb6-amode1.o|0xb000|0xb800
+IC2|A5343-09637 |defend.2|bin/defa7-defb6-amode1.o|0xc000|0xd000
+IC3|A5343-09638 |defend.3|bin/defa7-defb6-amode1.o|0xd000|0xdc60
+IC3|A5343-09638 |defend.3|bin/samexpa7.o|0x0000|0x02f8
+IC3|A5343-09638 |defend.3|bin/defa7-defb6-amode1.o|0xdf59|0x0230
+IC4|A5343-09639 |defend.4|bin/defa7-defb6-amode1.o|0xb800|0x0800
+IC5|Not Used||||
+IC6|A5343-09640 |defend.6|bin/blk71.o|0x0000|0x0772
+IC6|A5343-09640 |defend.6|bin/roms.o|0xa778|0x0088
+IC7|A5343-09641 |defend.7|bin/roms.o|0xa000|0x0800
+IC8|A5343-09642 |defend.8|bin/roms.o|0x0000|0x0800
+IC9|A5343-09642 |defend.9|bin/roms.o|0x0000|0x0800
+IC10|A5343-09643 |defend.10|bin/roms.o|0xa800|0x0800
+IC11|A5343-09644 |defend.11|bin/roms.o|0x0800|0x0800
+IC11|A5343-09644 |defend.11|Unknown||0x0800
+IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0x0800|0x0800
+IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0xaee9|0x0117
 
