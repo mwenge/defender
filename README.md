@@ -1,11 +1,13 @@
 # Defender (1981) by Eugene Jarvis and Sam Dicker
-<img src="https://user-images.githubusercontent.com/58846/125094063-d8c90380-e0ca-11eb-91b1-a3e80ef0e377.png" height=250><img src="https://user-images.githubusercontent.com/58846/125094574-4aa14d00-e0cb-11eb-9cf9-6dec489585f4.gif" height=250>
+<img src="https://user-images.githubusercontent.com/58846/125344603-67e64d80-e34f-11eb-90bf-79a6260db9f1.png" height=250><img src="https://user-images.githubusercontent.com/58846/125094574-4aa14d00-e0cb-11eb-9cf9-6dec489585f4.gif" height=250>
 
 [<img src="https://img.shields.io/badge/Lastest%20Release-Defender-blue.svg">](https://github.com/mwenge/defender/releases/download/v0.1/defender.rom)
 
 This is the source code for the Williams arcade game Defender.
 
-The source code can be compiled into an executable that you can run it in Windows or Linux.
+The source code can be compiled into an executable that you can then run in Windows or Linux. You can also compile
+it in the 11 rom files that would have been loaded onto the arcade cabinet's ROM board. Today, these rom files can be used
+to play the game in an emulator such as [MAME](https://www.mamedev.org/release.html).
 
 
 <!-- vim-markdown-toc GFM -->
