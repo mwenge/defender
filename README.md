@@ -16,6 +16,8 @@ The source code can be compiled into an executable that you can run it in Window
   * [Build Defender](#build-defender)
 * [Play Defender](#play-defender)
 * [Notes on the Source Code, ROM Files, and the Physical Circuit Boards](#notes-on-the-source-code-rom-files-and-the-physical-circuit-boards)
+  * [Changes required for the source to compile](#changes-required-for-the-source-to-compile)
+  * [ROM Part Table with Corresponding Assembled Object Files](#rom-part-table-with-corresponding-assembled-object-files)
 
 <!-- vim-markdown-toc -->
 ## Build Instructions
@@ -106,7 +108,7 @@ listing.
 In the [Defender product documentation](https://www.robotron-2084.co.uk/manuals/defender/defender_later_pcb_drawing_set.pdf) a 
 chart lists the part numbers for each chip and confirms that IC5 (i.e. `defend.5`) is unused:
 
-<img src="orig/RedLabelRomChart.png" size="300">
+<img src="orig/RedLabelROMChart.png" size="300">
 
 When we assemble the Defender source with `make redlabel` we create a bunch of
 object files and then split them across the 11 files to match the 11 in the Red
@@ -201,15 +203,244 @@ And we assemble `blk71.src` by itself:
 	./asm6809/src/asm6809 -B src/blk71.src -l bin/blk71.lst -o bin/blk71.o
 ```
 
-There were a few modifications to the source required along the way to get this to work, mainly
-to work around the fact that `RASM` seems to have allowed you to assemble code sections into overlapping
+### Changes required for the source to compile
+There were a few modifications to the source required along the way to get this to work.
+
+1. Replacing macro arguments to make them compatible `asm6809`,e.g.:
+```diff
+-NAPP    MACRO  \0,\1
+-        LDA    #\0
+-        LDX    #\1
++NAPP    MACRO  \1,\2
++        LDA    #\1
++        LDX    #\2
+         JMP    SLEEPP
+         ENDM 
+```
+
+2. Replacing the use of `$` in label names, e.g.:
+```diff
+-INIT$V  EQU    HOFV+2
+-HALLDV  EQU    INIT$V+2
++INITSSV  EQU    HOFV+2
++HALLDV  EQU    INITSSV+2
+```
+3. Replacing the use of '.' in label names, e.g.:
+```diff
+-        LDY    #.P1SCR          ;START WITH PLAYER 1
++        LDY    #P1SCR           ;START WITH PLAYER 1
+```
+
+4.  Work around the fact that `RASM` seems to have allowed you to assemble code sections into overlapping
 memory segments. For example both `amode1.src` and `defa7.src` want to assemble into position `$C000` in
 the ROM, meaning that one will overwrite the other. This explains why the main game files get assembled
 twice, once with attract mode (`amode1.src`) and once without: they wanted a binary with some segments
 overwritten with attract mode features and one without. We achieve this ourselves by modifying the source
 to compile and place the attract mode code to position `$2000` in memory, and when we later split the
-object files into the `defend.x` files pick the chunk of code we're interested in.
+object files into the `defend.x` files pick the chunk of code we're interested in:
+```diff
+@@ -111,6 +111,8 @@ YSHIP   EQU    $5000
+ AMTYPE  EQU    0
+ 
+         ORG    $C000
++        PUT    $2000
++
+         JMP    HALLOF           ;VECTORS
+         JMP    SCNR
+```
+5. In `amode1.src` I had to replace a few hard-coded constant values to match what was in the binary:
+```diff
+diff --git a/src/amode1.src b/src/amode1.src
+index 543cb7e..cdaeb1e 100755
+--- a/src/amode1.src
++++ b/src/amode1.src
+@@ -145,19 +147,19 @@ HALL1   STA    PNUMB            ;PLAYER NUMBER
+ HALL1A  JSR    P2SW
+ HALL1B  LDB    #$85             ;LIGHT BLUE LETTERS
+         STB    PCRAM+1
+-        LDA    #$FE             ;TODAYS SOUND - PHANTOM
++        LDA    #$3E             ;TODAYS SOUND - PHANTOM
+         LDX    #THSTAB          ;TODAYS TOP SCORE
+         JSR    CPXCY            ;COMPARE
+         BHS    HALL2            ;NOT THE BEST?
+-        LDA    #$FD             ;HIGH SCORE SOUND - TOCCATA
++        LDA    #$3D             ;HIGH SCORE SOUND - TOCCATA
+ HALL2   LDX    #$CC02           ;SOUND PIAS
+-        LDB    #$FF             ;CLEAR LINES
++        LDB    #$3F             ;CLEAR LINES
+         JSR    STBXBV
+-        LDB    #$E4             ;SELECT ORGAN
++        LDB    #$24             ;SELECT ORGAN
+         JSR    STBXBV
+-HALL3   DECB     DELAY
++HALL3   DECB                    ;DELAY
+         BNE    HALL3
+-        LDB    #$FF             ;CLEAR LINES
++        LDB    #$3F             ;CLEAR LINES
+         JSR    STBXBV
+         TFR    A,B
+         JSR    STBXBV           ;PLAY SOUND
+``` 
 
+6. Remove leading zeroes from some constants because `asm6809` would compile them in, e.g.:
+```diff
+-        ADDD   #0008            ;MAKE IT FASTER
++        ADDD   #8            ;MAKE IT FASTER
+```
+
+7. Update the bit-shift and bit-wise comparison notation to be compatible with syntax expected by `asm6809`, e.g.:
+```diff
+-        LDX    #WCURS!.$C35A    ;CONFUSION
+-        LDD    #WCURS!.$3CA5    ;MORE CONFUSION
++        LDX    #WCURS&$C35A    ;CONFUSION
++        LDD    #WCURS&$3CA5    ;MORE CONFUSION
+@@ -1206,7 +1208,7 @@ MT1     LDD    BGL              ;CALC SCANL
+         LDA    STATUS
+         BITA   #2               ;NO TERRAIN???
+         BNE    MTX              ;NONE
+-        LDA    #SCANER!>8
++        LDA    #SCANER>>8
+         LDY    #STETAB          ;ERASE TABLE
+```
+8. Comment out some directives not used by `asm6809`, e.g.:
+```diff
+index d2d7212..86d4bf0 100755
+--- a/src/blk71.src
++++ b/src/blk71.src
+@@ -1,6 +1,6 @@
+-        TTL    D E F E N D E R   1.0
+-        NMLIST
+-        NOGEN
++*       TTL  D E F E N D E R   1.0
++*       NMLIST
++*       NOGEN
+```
+
+9. Where a symbol equates to zero (e.g. `LDD OLINK,X` where `OLINK EQU 0` `RASM` optimised it to be equivalent
+to `LDD ,X`. `asm6809` doesn't do this, so for now we just replace one with the other to preserve identity of the
+binaries, e.g.:
+```diff
+@@ -128,10 +128,10 @@ GETOB   PSHS   U,D
+         LDX    OFREE
+         BNE    GETOB1           ;NOT OUT
+         JSR    ERROR
+-GETOB1  LDD    OLINK,X
++GETOB1  LDD    ,X               ;Fixmme: fix asm6809, was OLINK,X          
+         STD    OFREE
+         LDD    OPTR
+-        STD    OLINK,X
++        STD    ,X               ;Fixme: fixasm6809: was OLINK,X
+         CLRD 
+         STD    OBJX,X
+         STA    OTYP,X           ;CLEAR TYPE
+```
+
+10. This one may be worth investingating further. The code references `P1LAS` when it needs to be `P1LAT` to match
+the Red Label binaries. Would be interesting to know if this sheds any light on the version of the source code as it
+looks very like a typo that was bug-fixed.
+```diff
+@@ -831,14 +831,14 @@ CSCX    RTS
+ *DISPLAY LASERS
+ *
+ LDISP   PSHS   D,X,Y,U          ;PLAYER 1
+-        LDX    #P1LAS
+-        LDA    .P1LAS
++        LDX    #P1LAT           ;Fixme was: #P1LAS
++        LDA    P1LAS
+         BSR    LDSP
+         LDA    PLRCNT
+         DECA 
+         BEQ    LDPX
+-        LDX    #P2LAS
+-        LDA    .P2LAS
++        LDX    #P2LAT
++        LDA    P2LAS
+         BSR    LDSP
+```
+
+11. I needed to modify the `KILP` and `KILO` macros to assembly properly with `asm6809`. Removing the addition of `$`
+to the argument in the macro itself and instead adding it before passing the argument:
+```diff
+-KILP    MACRO  \0,\1
++KILP    MACRO  \1,\2
+         JSR    KILPOS
+-        FDB    $\0
+         FDB    \1
++        FDB    \2
+         ENDM 
+-KILO    MACRO  \0,\1
++KILO    MACRO  \1,\2
+         JSR    KILOS
+-        FDB    $\0
+         FDB    \1
++        FDB    \2
+         ENDM 
+index 33665f5..3f4c5ac 100755
+--- a/src/defb6.src
++++ b/src/defb6.src
+@@ -73,13 +73,13 @@ UFONV4  ADDA   #10
+         CLRB 
+         LDA    XTEMP+1
+         ADDD   PLAYV
+-        ASRA     DIVIDE           ;BY 2
++        ASRA                    ; DIVIDE BY 2
+         RORB 
+         STD    OYV,X
+ UFONVX  RTS  
+ *UFOKILL
+ UFOKIL  DEC    UFOCNT
+-        KILP   0120,UFHSND
++        KILP   $0120,UFHSND
+         RTS  
+ *
+```
+
+12. Replace some single-quotes with double-quotes for compatibility with `asm6809`, e.g.:
+```diff
+@@ -780,21 +780,21 @@ A28     FCC    "SPECIAL         ;FUNCTION/"
+ * DEFAULT HERE FOR NOW
+ *
+ DEFALT  FCB    $02,$12,$70      ;CRHSTD
+-        FCC    'DRJ'
++        FCC    "DRJ"
+         FCB    $01,$83,$15      ;CRHST1
+-        FCC    'SAM'
++        FCC    "SAM"
+         FCB    $01,$59,$20      ;THSTD2
+-        FCC    'LED'
++        FCC    "LED"
+```
+
+13. A few lines of code are affected by funnies in the way `asm6809` handles indexed addressing mode. These have
+been replaced with the required bytes until investigated further and hopefully the original code can be
+reinstated:
+
+```asm
+./src/blk71.src:191: TTER03  FCB    $11,$53          ;Fixme was: STX    [,Y]             ;FAST OUTPUT
+./src/amode1.src:543:AMODE6  FCB    $A7,$C4          ;Fixme was: STA    0,U
+./src/defa7.src:2123:        FCB    $A7,$94         ; Fixme: Was STA    [0,X]
+./src/defb6.src:1274:        FCB    $AD,$F4          ;Fixme: was JSR    [0,S]            ;DO IT
+```
+
+14. In a few cases I've had to replace the values of constants in the code to match the ROM binaries. These are:
+
+./src/romc0.src:78:        FDB    $D9FF            ;Fixme was: $FFFF
+./src/defb6.src:2170:      FDB    $0000,$00FE,$C300 ;3 ; Fixme: $C300 was $6600
+./src/mess0.src:68:        FDB    $5BFF            ;Fixme was: $FFFF
+./src/mess0.src:654:       FDB    $84FF            ;Fixme was: $FFFF
+
+15. `asm6809` doesn't allow variables names in ORG diretives:
+```asm
+./src/amode1.src:52:        ORG    $A162       ; Fixme: was ORG THTAB
+```
+
+16. Still have to figure out the compatible way of writing these instructions in `asm6809` syntax:
+```asm
+./src/romc0.src:551:        LDB    #$62             ;Fixme: was #$FF!.DISTBL
+./src/defa7.src:3049:       FCB    $11,$13           ;Fixme was BEQ    EXEC0
+```
+
+### ROM Part Table with Corresponding Assembled Object Files
 This table shows how the contents of each ROM chip relates back to the compiled code.
 
 ROM Chip| Part Number|File Name|Build Binary|Start Position in Build Binary|End Position in Build Binary
@@ -225,7 +456,7 @@ IC6|A5343-09640 |defend.6|bin/blk71.o|0x0000|0x0772
 IC6|A5343-09640 |defend.6|bin/roms.o|0xa778|0x0088
 IC7|A5343-09641 |defend.7|bin/roms.o|0xa000|0x0800
 IC8|A5343-09642 |defend.8|bin/roms.o|0x0000|0x0800
-IC9|A5343-09642 |defend.9|bin/roms.o|0x0000|0x0800
+IC9|A5343-09642 |defend.9|bin/defa7-defb6-amode1.o|0x0000|0x0800
 IC10|A5343-09643 |defend.10|bin/roms.o|0xa800|0x0800
 IC11|A5343-09644 |defend.11|bin/roms.o|0x0800|0x0800
 IC11|A5343-09644 |defend.11|Unknown||0x0800
