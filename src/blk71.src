@@ -188,7 +188,7 @@ TTER08  LDD    BGL
         BNE    TTER02
         LDS    TTBLP1           ;CHANGE TO FLAVOR 1
 TTER02  LDA    #$98
-TTER03  FCB    $11,$53          ;Fixme was: STX    [,Y]             ;FAST OUTPUT
+TTER03  COMF                    ;Was: 'STX [,Y]'  ;FAST OUTPUT
         PULS   B,U
         STD    ,Y
         STU    [,Y++]

@@ -131,7 +131,7 @@ GETOB   PSHS   U,D
 GETOB1  LDD    ,X               ;Fixmme: fix asm6809, was OLINK,X          
         STD    OFREE
         LDD    OPTR
-        STD    ,X               ;Fixme: fixasm6809: was OLINK,X
+        STD    OLINK,X
         CLRD 
         STD    OBJX,X
         STA    OTYP,X           ;CLEAR TYPE
@@ -1441,8 +1441,8 @@ WCTAB   FCB    $81,$28,$07,$16,$2F,$84,$15,0
 *
 MONO    PSHS   U,X,D            ;SAVE REGISTERS
         JSR    MAPCH2           ;SELECT MAP
-        LDD    ,Y               ;Fixme,fixasm6809: was OBJW,Y           ;GET PICTURE SIZE
-        STD    ,U               ;Fixme,fixasm6809: was OBJW,U           ;COPY TO MONO DESCRIPTOR
+        LDD    OBJW,Y           ;GET PICTURE SIZE
+        STD    OBJW,U           ;COPY TO MONO DESCRIPTOR
         MUL                     ; COMPUTE NUMBER OF BYTES
         LEAX   OBJL,U           ;GET START OF MONO DATA ADDRESS
         STX    OBJP0,U          ;SAVE IN MONO DESCRIPTOR
@@ -2120,7 +2120,7 @@ STOUT   LDA    STATUS
         COMB 
 STOUT0  STB    ITEMP2
         CLRA 
-        FCB    $A7,$94         ; Fixme: Was STA    [0,X]
+        STA    [0,X]
         STA    [4,X]
         STA    [8,X]
         STA    [12,X]
@@ -2592,7 +2592,7 @@ GETSHL  PSHS   D,Y,U
         LDD    OLINK,X
         STD    OFREE
         LDD    SPTR
-        STD    ,X               ;Fixme,fixasm6809: was OLINK,X
+        STD    OLINK,X
         INC    BMBCNT           ;KICK COUNTER
         STX    SPTR             ;LINK HIM IN
         PULS   D,Y,U,PC

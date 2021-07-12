@@ -548,7 +548,7 @@ SWITST  JSR    NEWTST
         LDY    #ISWTTS          ;GIVE INSTRUCTIONS
         JSR    VOPERI
         TFR    DP,A             ;GET ADDRESS OF DISTBL
-        LDB    #$62             ;Fixme: was #$FF!.DISTBL
+        LDB    #($FF&DISTBL)    ;Fixme: was #$FF!.DISTBL
         STD    TEMP2C           ;SAVE IT
         ADDB   #38              ;INITIALIZE TABLE
         TFR    D,X

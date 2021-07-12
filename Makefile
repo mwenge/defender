@@ -37,7 +37,7 @@ defender:
  			-l bin/defa7-defb6.lst -o bin/defa7-defb6.o
 	#
 	# Build blk71
-	./asm6809/src/asm6809 -B src/blk71.src -l bin/blk71.lst -o bin/blk71.o
+	./asm6809/src/asm6809 -B --6309 src/blk71.src -l bin/blk71.lst -o bin/blk71.o
 	#
 	# Build roms
 	./asm6809/src/asm6809 -B src/mess0.src src/romf8.src src/romc0.src src/romc8.src\

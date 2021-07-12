@@ -1271,7 +1271,7 @@ LJSR    LEAS   -3,S             ;MAKE ROOM
         STU    3,S
         BSR    MAPCHG           ;MAKE NEW BLOCK
         PULS   A,U              ;RESTORE
-        FCB    $AD,$F4          ;Fixme: was JSR    [0,S]            ;DO IT
+        JSR    [0,S]            ;DO IT
         PSHS   A,U              ;SAVE AGAIN
         LDA    5,S              ;GET OLD BLOCK BACK
         BSR    MAPCHG           ;HOW BORING

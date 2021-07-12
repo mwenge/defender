@@ -282,12 +282,6 @@ index 543cb7e..cdaeb1e 100755
          JSR    STBXBV           ;PLAY SOUND
 ``` 
 
-6. Remove leading zeroes from some constants because `asm6809` would compile them in, e.g.:
-```diff
--        ADDD   #0008            ;MAKE IT FASTER
-+        ADDD   #8            ;MAKE IT FASTER
-```
-
 7. Update the bit-shift and bit-wise comparison notation to be compatible with syntax expected by `asm6809`, e.g.:
 ```diff
 -        LDX    #WCURS!.$C35A    ;CONFUSION
@@ -316,24 +310,6 @@ index d2d7212..86d4bf0 100755
 +*       NOGEN
 ```
 
-9. Where a symbol equates to zero (e.g. `LDD OLINK,X` where `OLINK EQU 0` `RASM` optimised it to be equivalent
-to `LDD ,X`. `asm6809` doesn't do this, so for now we just replace one with the other to preserve identity of the
-binaries, e.g.:
-```diff
-@@ -128,10 +128,10 @@ GETOB   PSHS   U,D
-         LDX    OFREE
-         BNE    GETOB1           ;NOT OUT
-         JSR    ERROR
--GETOB1  LDD    OLINK,X
-+GETOB1  LDD    ,X               ;Fixmme: fix asm6809, was OLINK,X          
-         STD    OFREE
-         LDD    OPTR
--        STD    OLINK,X
-+        STD    ,X               ;Fixme: fixasm6809: was OLINK,X
-         CLRD 
-         STD    OBJX,X
-         STA    OTYP,X           ;CLEAR TYPE
-```
 
 10. This one may be worth investingating further. The code references `P1LAS` when it needs to be `P1LAT` to match
 the Red Label binaries. Would be interesting to know if this sheds any light on the version of the source code as it
@@ -411,34 +387,21 @@ index 33665f5..3f4c5ac 100755
 +        FCC    "LED"
 ```
 
-13. A few lines of code are affected by funnies in the way `asm6809` handles indexed addressing mode. These have
-been replaced with the required bytes until investigated further and hopefully the original code can be
-reinstated:
+13. `blk71.src` has to be compiled with 6309 extensions and `STX [,Y]` has to be changed to the `COMF' instruction
+in order to get it to match with the ROM binaries.
 
 ```asm
-./src/blk71.src:191: TTER03  FCB    $11,$53          ;Fixme was: STX    [,Y]             ;FAST OUTPUT
-./src/amode1.src:543:AMODE6  FCB    $A7,$C4          ;Fixme was: STA    0,U
-./src/defa7.src:2123:        FCB    $A7,$94         ; Fixme: Was STA    [0,X]
-./src/defb6.src:1274:        FCB    $AD,$F4          ;Fixme: was JSR    [0,S]            ;DO IT
+./src/blk71.src:191: TTER03  COMF       ;Was: STX    [,Y]             ;FAST OUTPUT
 ```
 
 14. In a few cases I've had to replace the values of constants in the code to match the ROM binaries. These are:
-
-./src/romc0.src:78:        FDB    $D9FF            ;Fixme was: $FFFF
-./src/defb6.src:2170:      FDB    $0000,$00FE,$C300 ;3 ; Fixme: $C300 was $6600
-./src/mess0.src:68:        FDB    $5BFF            ;Fixme was: $FFFF
-./src/mess0.src:654:       FDB    $84FF            ;Fixme was: $FFFF
-
-15. `asm6809` doesn't allow variables names in ORG diretives:
 ```asm
-./src/amode1.src:52:        ORG    $A162       ; Fixme: was ORG THTAB
+./src/romc0.src:78:        FDB    $D9FF               ;Fixme was: $FFFF
+./src/defb6.src:2170:      FDB    $0000,$00FE,$C300 ; Fixme: $C300 was $6600
+./src/mess0.src:68:        FDB    $5BFF              ;Fixme was: $FFFF
+./src/mess0.src:654:       FDB    $84FF              ;Fixme was: $FFFF
 ```
 
-16. Still have to figure out the compatible way of writing these instructions in `asm6809` syntax:
-```asm
-./src/romc0.src:551:        LDB    #$62             ;Fixme: was #$FF!.DISTBL
-./src/defa7.src:3049:       FCB    $11,$13           ;Fixme was BEQ    EXEC0
-```
 
 ### ROM Part Table with Corresponding Assembled Object Files
 This table shows how the contents of each ROM chip relates back to the compiled code.
