@@ -16,8 +16,9 @@ The source code can be compiled into an executable that you can run it in Window
   * [Build Defender](#build-defender)
 * [Play Defender](#play-defender)
 * [Notes on the Source Code, ROM Files, and the Physical Circuit Boards](#notes-on-the-source-code-rom-files-and-the-physical-circuit-boards)
-  * [Changes required for the source to compile](#changes-required-for-the-source-to-compile)
+  * [About the source code](#about-the-source-code)
   * [ROM Part Table with Corresponding Assembled Object Files](#rom-part-table-with-corresponding-assembled-object-files)
+  * [Changes required for the source to compile](#changes-required-for-the-source-to-compile)
 
 <!-- vim-markdown-toc -->
 ## Build Instructions
@@ -51,7 +52,7 @@ cd ..
 ### Build Defender
 
 To build the rom image `defender.rom` that is embedded in the [Williams Arcade
-Classics]() release of [`defender.exe`] (orig/WilliamsArcadeClassics):
+Classics](https://en.wikipedia.org/wiki/Williams_Arcade%27s_Greatest_Hits) release of [`defender.exe`] (orig/WilliamsArcadeClassics):
 ```sh
 make defender.rom
 ```
@@ -64,13 +65,19 @@ These will get written to a directory called `redlabel`.
 
 ## Play Defender
 
-Coming soon.
+Once you've built defender you can now use the rom files in the `redlabel' directory to play defender on [MAME](https://www.mamedev.org/release.html). If you're on Ubuntu you can also install MAME with apt:
+```sh
+sudo apt install mame
+```
 
 ## Notes on the Source Code, ROM Files, and the Physical Circuit Boards
 
-The source code in [src](src) was originally retrieved from
-https://github.com/historical-source/defender. It is the code for the 'Red
-Label' version of the game. There were four versions of the game released:
+### About the source code
+The source code for Defender in [src](src) was originally retrieved from
+https://github.com/historical-source/defender. It is the Motorola 6809 assembly language
+source code for the 'Red Label' version of the game.
+
+There were four versions of the game released:
 White Label, Blue Label, Green Label, and Red Label, in that order. Each
 release was a circuit board with the compiled code split across a number of
 different ROM chips, also referred to as 'ICs'. This image of the Red Label ROM
@@ -202,6 +209,33 @@ And we assemble `blk71.src` by itself:
 	# Build blk71
 	./asm6809/src/asm6809 -B src/blk71.src -l bin/blk71.lst -o bin/blk71.o
 ```
+
+### ROM Part Table with Corresponding Assembled Object Files
+This table shows how the contents of each ROM chip relates back to the compiled code.
+
+ROM Chip| Part Number|File Name|Build Binary|Start Position in Build Binary|End Position in Build Binary
+| --- | --- | --- | --- | --- | --- |
+IC1|A5343-09636 |defend.1|bin/defa7-defb6-amode1.o|0xb000|0xb800
+IC2|A5343-09637 |defend.2|bin/defa7-defb6-amode1.o|0xc000|0xd000
+IC3|A5343-09638 |defend.3|bin/defa7-defb6-amode1.o|0xd000|0xdc60
+IC3|A5343-09638 |defend.3|bin/samexpa7.o|0x0000|0x02f8
+IC3|A5343-09638 |defend.3|bin/defa7-defb6-amode1.o|0xdf59|0x0230
+IC4|A5343-09639 |defend.4|bin/defa7-defb6-amode1.o|0xb800|0x0800
+IC5|Not Used||||
+IC6|A5343-09640 |defend.6|bin/blk71.o|0x0000|0x0772
+IC6|A5343-09640 |defend.6|bin/roms.o|0xa778|0x0088
+IC7|A5343-09641 |defend.7|bin/roms.o|0xa000|0x0800
+IC8|A5343-09642 |defend.8|bin/roms.o|0x0000|0x0800
+IC9|A5343-09642 |defend.9|bin/defa7-defb6-amode1.o|0x0000|0x0800
+IC10|A5343-09643 |defend.10|bin/roms.o|0xa800|0x0800
+IC11|A5343-09644 |defend.11|bin/roms.o|0x0800|0x0800
+IC11|A5343-09644 |defend.11|Unknown||0x0800
+IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0x0800|0x0800
+IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0xaee9|0x0117
+
+Replicating this arrangement of the binaries is achieved by [`ChainFilesToRom.py`](ChainFilesToRom.py) in the 
+project's [Makefile](Makefile). It's a simple python script that extracts the relevant segments from each of the
+binaries built in the `bin` folder when you run `make redlabel.
 
 ### Changes required for the source to compile
 There were a few modifications to the source required along the way to get this to work.
@@ -402,27 +436,4 @@ in order to get it to match with the ROM binaries.
 ./src/mess0.src:654:       FDB    $84FF              ;Fixme was: $FFFF
 ```
 
-
-### ROM Part Table with Corresponding Assembled Object Files
-This table shows how the contents of each ROM chip relates back to the compiled code.
-
-ROM Chip| Part Number|File Name|Build Binary|Start Position in Build Binary|End Position in Build Binary
-| --- | --- | --- | --- | --- | --- |
-IC1|A5343-09636 |defend.1|bin/defa7-defb6-amode1.o|0xb000|0xb800
-IC2|A5343-09637 |defend.2|bin/defa7-defb6-amode1.o|0xc000|0xd000
-IC3|A5343-09638 |defend.3|bin/defa7-defb6-amode1.o|0xd000|0xdc60
-IC3|A5343-09638 |defend.3|bin/samexpa7.o|0x0000|0x02f8
-IC3|A5343-09638 |defend.3|bin/defa7-defb6-amode1.o|0xdf59|0x0230
-IC4|A5343-09639 |defend.4|bin/defa7-defb6-amode1.o|0xb800|0x0800
-IC5|Not Used||||
-IC6|A5343-09640 |defend.6|bin/blk71.o|0x0000|0x0772
-IC6|A5343-09640 |defend.6|bin/roms.o|0xa778|0x0088
-IC7|A5343-09641 |defend.7|bin/roms.o|0xa000|0x0800
-IC8|A5343-09642 |defend.8|bin/roms.o|0x0000|0x0800
-IC9|A5343-09642 |defend.9|bin/defa7-defb6-amode1.o|0x0000|0x0800
-IC10|A5343-09643 |defend.10|bin/roms.o|0xa800|0x0800
-IC11|A5343-09644 |defend.11|bin/roms.o|0x0800|0x0800
-IC11|A5343-09644 |defend.11|Unknown||0x0800
-IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0x0800|0x0800
-IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0xaee9|0x0117
 
