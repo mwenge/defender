@@ -110,7 +110,7 @@ drwxrwxr-x 8 robert robert 4096 Jul 11 11:02 ..
 -rw-rw-r-- 1 robert robert 2048 Dec 24  1996 defend.9
 ```
 
-So each filed `defend.[x]` corresponds to a matching chip on the board and
+So each file `defend.[x]` corresponds to a matching chip on the board and
 because there is a missing chip in slot 5 we have no `defend.5` in the rom dump
 listing.
 
@@ -237,7 +237,7 @@ IC12|A5343-09645 |defend.12|bin/defa7-defb6-amode1.o|0xaee9|0x0117
 
 Replicating this arrangement of the binaries is achieved by [`ChainFilesToRom.py`](ChainFilesToRom.py) in the 
 project's [Makefile](Makefile). It's a simple python script that extracts the relevant segments from each of the
-binaries built in the `bin` folder when you run `make redlabel.
+binaries built in the `bin` folder when you run `make redlabel`.
 
 ### Changes required for the source to compile
 There were a few modifications to the source required along the way to get this to work.
