@@ -6,7 +6,7 @@
 This is the source code for the Williams arcade game Defender.
 
 The source code can be compiled into an executable that you can then run in Windows or Linux. You can also compile
-it in the 11 rom files that would have been loaded onto the arcade cabinet's ROM board. Today, these rom files can be used
+it into the 11 rom files that would have been loaded onto the arcade cabinet's ROM board. Today, these rom files can be used
 to play the game in an emulator such as [MAME](https://www.mamedev.org/release.html).
 
 
