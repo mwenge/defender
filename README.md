@@ -142,7 +142,7 @@ DR J. 1/21/81
 
 Since the `RASM` assembler is no longer available to us we use [`asm6809`](asm6809) instead. Fortunately this
 does a good job of assembling the source faithfully and [only very minor modifications to the source files are
-required to produce binaries](src). We recreate the steps in Eugene's notes as follows:
+required to produce binaries](#changes-required-for-the-source-to-compile). We recreate the steps in Eugene's notes as follows:
 
 ```
 	# Build amode1 # The equivalent of: RASM PHR2,DEFA2,DEFB2,AMODE0;-X (ELSE CREF SYMBOL OVERFLOW)
