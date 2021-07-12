@@ -54,7 +54,7 @@ cd ..
 ### Build Defender
 
 To build the rom image `defender.rom` that is embedded in the [Williams Arcade
-Classics](https://en.wikipedia.org/wiki/Williams_Arcade%27s_Greatest_Hits) release of [`defender.exe`] (orig/WilliamsArcadeClassics):
+Classics](https://en.wikipedia.org/wiki/Williams_Arcade%27s_Greatest_Hits) release of [`defender.exe`](orig/WilliamsArcadeClassics), do:
 ```sh
 make defender.rom
 ```
