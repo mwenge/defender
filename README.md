@@ -76,7 +76,7 @@ sudo apt install mame
 
 ### About the source code
 The source code for Defender in [src](src) was originally retrieved from
-https://github.com/historical-source/defender. It is the Motorola 6809 assembly language
+https://github.com/historicalsource/defender. It is the Motorola 6809 assembly language
 source code for the 'Red Label' version of the game.
 
 There were four versions of the game released:
