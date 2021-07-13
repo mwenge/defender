@@ -19,18 +19,18 @@ B2SND   EQU    $12              ;BONUS SOUND #2 CODE
 SP1MAX  EQU    32
 TACC    EQU    4                ;TACCATA TEMPO CONSTANT
 PHANC   EQU    3                ;PHANTOM TEMPO CONTANT
-TAF     EQU    34715!>1         ;NOTE TIMES
-TA      EQU    36780!>1
-TBF     EQU    38967!>1
-TB      EQU    41284!>1
-TC      EQU    43739!>1
-TCS     EQU    46340!>1
-TD      EQU    49096!>1
-TEF     EQU    52015!>1
-TE      EQU    55108!>1
-TF      EQU    58385!>1
-TFS     EQU    61857!>1
-TG      EQU    65535!>1
+TAF     EQU    34715>>1         ;NOTE TIMES
+TA      EQU    36780>>1
+TBF     EQU    38967>>1
+TB      EQU    41284>>1
+TC      EQU    43739>>1
+TCS     EQU    46340>>1
+TD      EQU    49096>>1
+TEF     EQU    52015>>1
+TE      EQU    55108>>1
+TF      EQU    58385>>1
+TFS     EQU    61857>>1
+TG      EQU    65535>>1
 *
 * TALKING EQUATES
 *
@@ -63,7 +63,7 @@ XPLAY   RMB    2
 XPTR    RMB    2
 TEMPA   RMB    1                ;ACCA TEMP
 TEMPB   RMB    1
-LOCRAM  EQU    $2000
+LOCRAM  EQU    $0013
 *
 *GWAVE PARAMETERS
 *
@@ -89,7 +89,7 @@ GWTAB   RMB    WVELEN           ;WAVE TABLE
 *
 *VARIWAVE PARAMETERS
 *
-        ORG    LOCRAM
+        RORG    LOCRAM
 LOPER   RMB    1                ;LO PERIOD
 HIPER   RMB    1                ;HIPERIOD
 LODT    RMB    1                ;PERIOD DELTAS
@@ -100,10 +100,11 @@ LOMOD   RMB    1                ;BASE FREQ MOD
 VAMP    RMB    1                ;AMPLITUDE
 LOCNT   RMB    1                ;PERIOD COUNTERS
 HICNT   RMB    1
+        REND
 *
 *NOISE ROUTINE PARAMETERS
 *
-        ORG    LOCRAM
+        RORG    LOCRAM
 DECAY   RMB    1
 NAMP    RMB    1
 CYCNT   RMB    1
@@ -111,29 +112,33 @@ NFRQ1   RMB    2
 NFFLG   RMB    1
 LFREQ   RMB    1
 DFREQ   RMB    1
+        REND
 *
 *FILTERED NOISE ROUTINE PARAMETERS
 *
-        ORG    LOCRAM
+        RORG    LOCRAM
 FMAX    RMB    1                ;MAXIMUM_FREQUENCY
 FHI     RMB    1                ;FREQUENCY
 FLO     RMB    1
 SAMPC   RMB    2                ;SAMPLE COUNT
 FDFLG   RMB    1                ;FREQUENCY DECREMENT FLAG
 DSFLG   RMB    1                ;DISTORTION FLAG
+        REND
 *
 *SCREAM TABLES
 *
-        ORG    LOCRAM
+        RORG    LOCRAM
 STABLE  RMB    2*ECHOS          ;SCREAM TABLE
 SRMEND  EQU    *
+        REND
 *
 *ORGAN PARAMETERS
 *
-        ORG    LOCRAM
+        RORG    LOCRAM
 DUR     RMB    2                ;NOTE DURATION
 OSCIL   RMB    1                ;OSCILLATORS
 RDELAY  RMB    60               ;RAM DELAY LOAD
+        REND
 *
 * CHECKSUM CALCULATOR & RELOCATOR
 *
@@ -166,7 +171,7 @@ TO      RMB    2                ;FOR POINTER
 * MAIN PROGRAM
 *
         ORG    ROM
-        FCB    $FE              ;CHECKSUM BYTE
+        FCB    $FF              ;CHECKSUM BYTE
 SETUP   SEI                     ;SET INTERRUPT MASK
         LDS    #ENDRAM          ;INITIALIZE STACK POINTER
         LDX    #SOUND           ;INDEX TO PIA
@@ -192,10 +197,10 @@ SETUP   SEI                     ;SET INTERRUPT MASK
 *VARI LOADER
 *
 VARILD  TAB  
-        ASLA     X2
-        ASLA     X4
-        ASLA     X8
-        ABA      X9
+        ASLA     ;X2
+        ASLA     ;X4
+        ASLA     ;X8
+        ABA      ;X9
         LDX    #LOCRAM
         STX    XPTR             ;SET XSFER
         LDX    #VVECT
@@ -443,10 +448,10 @@ RADIO2  INX                     ;CARRY?,RAISE FREQ
         BEQ    RADIO4           ;DONE?
 RADIO3  STX    TEMPX
         ANDA   #$F              ;SET POINTER
-        ADDA   #RADSND!.$FF
+        ADDA   #RADSND&$FF
         STAA   XPTR+1
         LDX    XPTR
-        LDAA   ,X
+        LDAA   0,X
         STAA   SOUND            ;PLAY SOUND
         BRA    RADIO1
 RADIO4  RTS  
@@ -473,7 +478,7 @@ HYPER4  DECB
 *SCREAM
 *
 SCREAM  LDX    #STABLE          ;ZERO FREQS AND TIMES
-SCREM1  CLR    ,X
+SCREM1  CLR    0,X
         INX  
         CPX    #SRMEND
         BNE    SCREM1
@@ -521,7 +526,7 @@ ORGANT  DEC    ORGFLG           ;MINUS ORGAN FLAG
 ORGNT1  CLR    ORGFLG
         STAA   TEMPA            ;TUNE NUMBER
         LDX    #ORGTAB
-ORGNT2  LDAA   ,X               ;TUNE TABLE LENGTH
+ORGNT2  LDAA   0,X               ;TUNE TABLE LENGTH
         BEQ    ORGNT5           ;INVALID TUNE
         DEC    TEMPA
         BEQ    ORGNT3
@@ -533,7 +538,7 @@ ORGNT3  INX
         JSR    ADDX
         STX    XPLAY            ;TUNE END
         LDX    XPTR
-ORGNT4  LDAA   ,X               ;TUNE LOOP
+ORGNT4  LDAA   0,X               ;TUNE LOOP
         STAA   OSCIL
         LDAA   1,X
         LDX    2,X
@@ -565,13 +570,13 @@ ORGNN1  DEC    ORGFLG
         STAA   OSCIL
         CLRA 
         BRA    *                ;WAIT FOR NEXT CODE
-ORGNN2  DECA     DELAY
+ORGNN2  DECA                    ;DELAY
         CMPA   #11
         BLS    ORGNN3
         CLRA 
 ORGNN3  LDX    #NOTTAB
         JSR    ADDX
-        LDAA   ,X
+        LDAA   0,X
         LDX    #$FFFF           ;DURATION
         STX    DUR
         BSR    ORGANL
@@ -587,20 +592,20 @@ LDLP    CMPA   #0
         CMPA   #3
         BEQ    LD2
         LDAB   #1               ;NOP
-        STAB   ,X
+        STAB   0,X
         INX  
         SUBA   #2
         BRA    LDLP
 LD2     LDAB   #$91             ;CMPA 0
-        STAB   ,X
+        STAB   0,X
         CLR    1,X
         INX  
         INX  
 LD1     LDAB   #$7E             ;JMP START2
-        STAB   ,X
-        LDAB   #ORGAN1!>8       ;MSB
+        STAB   0,X
+        LDAB   #ORGAN1>>8       ;MSB
         STAB   1,X
-        LDAB   #ORGAN1!.$FF     ;LSB
+        LDAB   #ORGAN1&$FF     ;LSB
         STAB   2,X
 *
 *ORGAN ROUTINE
@@ -730,7 +735,7 @@ GWLD    TAB                     ;MULKT BY 7
         ABA  
         LDX    #SVTAB           ;SOUND VECTOR TABLE
         JSR    ADDX
-        LDAA   ,X
+        LDAA   0,X
         TAB  
         ANDA   #$F
         STAA   GCCNT            ;GET CYCLE COUNT
@@ -752,7 +757,7 @@ GWLD    TAB                     ;MULKT BY 7
         LDX    #GWVTAB          ;CALC WAVEFORM ADDR
 GWLD2   DEC    TEMPA            ;WAVE FORM #
         BMI    GWLD3            ;FINIS
-        LDAA   ,X
+        LDAA   0,X
         INCA 
         JSR    ADDX
         BRA    GWLD2
@@ -768,7 +773,7 @@ GWLD3   STX    GWFRM
         LDAA   4,X              ;GET DELTA FREQ COUNT
         STAA   GDCNT
         LDAA   5,X              ;GET PATTERN COUNT
-        TAB      SAVE
+        TAB                     ;SAVE
         LDAA   6,X              ;PATTERN OFFSET
         LDX    #GFRTAB
         JSR    ADDX
@@ -787,7 +792,7 @@ GWAVE   LDAA   GECHO
 GWT4    LDX    GWFRQ
         STX    XPLAY
 GPLAY   LDX    XPLAY            ;GET NEW PERIOD
-        LDAA   ,X
+        LDAA   0,X
         ADDA   FOFSET
         STAA   GPER
         CPX    FRQEND
@@ -799,7 +804,7 @@ GOUT    LDX    #GWTAB           ;SETUP WAVEFORM POINTER
 GOUTLP  LDAA   GPER
 GPRLP   DECA                    ;WAIT FOR PERIOD
         BNE    GPRLP
-        LDAA   ,X               ;OUTPUT SOUND
+        LDAA   0,X               ;OUTPUT SOUND
         STAA   SOUND
 GPR1    INX  
         CPX    WVEND            ;END OF WAVE?
@@ -834,13 +839,13 @@ GEND61  LDX    GWFRQ            ;GET INDEX
 GW0     LDAA   FOFSET           ;INC OR DEC?
         TST    GDFINC
         BMI    GW1              ;DEC
-        ADDA   ,X               ;INC
+        ADDA   0,X               ;INC
         BCS    GW2              ;CARRY=OVERFLOW
         BRA    GW2A
-GW1     ADDA   ,X               ;DEC
+GW1     ADDA   0,X               ;DEC
         BEQ    GW2              ;OVERFLOW ON EQ
         BCS    GW2A             ;OVERFLOW IF CARRY CLEAR
-GW2     TSTB     FOUND            ;START YET?
+GW2     TSTB                    ;FOUND START YET?
         BEQ    GW2B             ;NO
         BRA    GW3              ;YES, THIS IS THE END
 GW2A    TSTB 
@@ -860,14 +865,14 @@ GW3     STX    FRQEND
         LDAA   PRDECA
         BSR    WVDECA
 GEND0   JMP    GWAVE
-GEND1   RTS      TERMINATE
+GEND1   RTS                     ;TERMINATE
 *
 *WAVE TRANSFER ROUTINE
 *
 WVTRAN  LDX    #GWTAB
         STX    XPTR
         LDX    GWFRM
-        LDAB   ,X               ;GET WAVE LENGTH
+        LDAB   0,X               ;GET WAVE LENGTH
         INX  
         JSR    TRANS
         LDX    XPTR
@@ -894,11 +899,11 @@ WVDLP   STX    XPTR
         INX  
         STX    XPLAY
         LDX    XPTR
-        LDAA   ,X
-WVDLP1  SBA      DECAY
+        LDAA   0,X
+WVDLP1  SBA                     ;DECAY
         DEC    TEMPA
         BNE    WVDLP1
-        STAA   ,X
+        STAA   0,X
         INX  
         CPX    WVEND            ;END OF WAVE?
         BNE    WVDLP            ;NO
@@ -1020,6 +1025,7 @@ RADSND  FCB    $8C,$5B,$B6,$40,$BF,$49,$A4,$73
 ORGTAB  FCB    3*4
         FDB    $7F1D,TD/PHANC/2*1  ;D2 1/4  NOTE
         FDB    $7F23,TCS/PHANC/2*1  ;CS2 1/4 NOTE
+* In the rom this is $508B instead of $508A.
         FDB    $FE08,(TFS/PHANC/1*1)*2  ;FS1 1   NOTE
 *TACCATA
         FCB    34*4
@@ -1159,4 +1165,4 @@ IRQV    FDB    IRQ
 SWIV    FDB    SETUP
 NMIV    FDB    NMI
 RESETV  FDB    SETUP
-        END    CKSUM
+        END    ;CKSUM

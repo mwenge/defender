@@ -44,8 +44,8 @@ defender:
 	 		-l bin/roms.lst -o bin/roms.o
 	#
 	# Build sound
-	./asm6809/src/asm6809 -B --6309 src/vsndrm1.src\
-	 		-l bin/vsndrm1.lst -o bin/vsndrm1.o
+	./vasm-mirror/vasm6800_oldstyle -Fbin -ast -unsshift src/vsndrm1.src\
+	 		-L bin/vsndrm1.lst -o bin/vsndrm1.o
 
 # Recreate the uncompressed ROM images in DEFENDER.EXE
 defender.rom: defender
@@ -128,6 +128,14 @@ redlabel: defender
 		bin/defa7-defb6-amode1.o,0x0801,0x0000,0x0800,"defa7"\
 		bin/defa7-defb6-amode1.o,0xaeea,0x06e9,0x0117,"amode tail"
 	echo "8115fdb8540e93d38e036f007e19459a  redlabel/defend.12" | md5sum -c
+	# defend.snd
+	./ChainFilesToRom.py redlabel/defend.snd 0x0800\
+		bin/vsndrm1.o,0xf801,0x0000,0x0800,"vsndrm1"
+	# This should be 8a, but the assembler used for the ROM has calculated the product
+	# of (61857>>1)/3/1*1)*2) as '508b' instead of '508a'. See ORGTAB in vsndrm1.src.
+	./PatchROM.py redlabel/defend.snd\
+	 	0x05b6,'8b'
+	echo "ec5b36f80f7bd93ba9e6269f0376efd6  redlabel/defend.snd" | md5sum -c
 
 clean:
 	-rm bin/*.o
