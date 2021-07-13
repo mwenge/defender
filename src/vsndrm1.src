@@ -63,7 +63,7 @@ XPLAY   RMB    2
 XPTR    RMB    2
 TEMPA   RMB    1                ;ACCA TEMP
 TEMPB   RMB    1
-LOCRAM  EQU    *
+LOCRAM  EQU    $2000
 *
 *GWAVE PARAMETERS
 *
