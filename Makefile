@@ -42,6 +42,10 @@ defender:
 	# Build roms
 	./asm6809/src/asm6809 -B src/mess0.src src/romf8.src src/romc0.src src/romc8.src\
 	 		-l bin/roms.lst -o bin/roms.o
+	#
+	# Build sound
+	./asm6809/src/asm6809 -B --6309 src/vsndrm1.src\
+	 		-l bin/vsndrm1.lst -o bin/vsndrm1.o
 
 # Recreate the uncompressed ROM images in DEFENDER.EXE
 defender.rom: defender
