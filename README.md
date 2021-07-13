@@ -30,7 +30,8 @@ sudo apt install build-essentials wine python3
 
 ### Build the assembler toolchain
 
-We use [`asm6809`](https://www.6809.org.uk/asm6809/) to assembler the source code. 
+We use [`asm6809`](https://www.6809.org.uk/asm6809/) to assembler the source code for the main game and [`vasm`](http://www.compilers.de/vasm.html) to compile
+the sound module. 
 
 First you must run the following to set up the git submodules containing the assembler toolchain:
 
@@ -46,6 +47,9 @@ cd asm6809
 ./autogen.sh
 ./configure
 make 
+cd ..
+cd vasm-mirror
+make CPU=6800 SYNTAX=oldstyle
 cd ..
 ```
 
