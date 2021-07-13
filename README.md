@@ -3,7 +3,7 @@
 
 This is the source code for the Williams arcade game Defender.
 
-The source code can be compiled into an executable that you can then run in Windows or Linux. You can also compile
+The source code can be assembled into an executable that you can then run in Windows or Linux. You can also assemble
 it into the 11 rom files that would have been loaded onto the arcade cabinet's ROM board. Today, these rom files can be used
 to play the game in an emulator such as [MAME](https://www.mamedev.org/release.html).
 
@@ -18,7 +18,7 @@ to play the game in an emulator such as [MAME](https://www.mamedev.org/release.h
 * [Notes on the Source Code, ROM Files, and the Physical Circuit Boards](#notes-on-the-source-code-rom-files-and-the-physical-circuit-boards)
   * [About the source code](#about-the-source-code)
   * [ROM Part Table with Corresponding Assembled Object Files](#rom-part-table-with-corresponding-assembled-object-files)
-  * [Changes required for the source to compile](#changes-required-for-the-source-to-compile)
+  * [Changes required for the source to assemble](#changes-required-for-the-source-to-assemble)
 
 <!-- vim-markdown-toc -->
 ## Build Instructions
@@ -79,7 +79,7 @@ source code for the 'Red Label' version of the game.
 
 There were four versions of the game released:
 White Label, Blue Label, Green Label, and Red Label, in that order. Each
-release was a circuit board with the compiled code split across a number of
+release was a circuit board with the assembled code split across a number of
 different ROM chips, also referred to as 'ICs'. This image of the Red Label ROM
 board from [Scott Tunstall's
 site](https://www.robotron-2084.co.uk/techwilliamshardwareid.html) gives you an
@@ -140,14 +140,14 @@ DR J. 1/21/81
 
 Since the `RASM` assembler is no longer available to us we use [`asm6809`](asm6809) instead. Fortunately this
 does a good job of assembling the source faithfully and [only very minor modifications to the source files are
-required to produce binaries](#changes-required-for-the-source-to-compile). We recreate the steps in Eugene's notes as follows:
+required to produce binaries](#changes-required-for-the-source-to-assemble). We recreate the steps in Eugene's notes as follows:
 
 ```
 	# Build amode1 # The equivalent of: RASM PHR2,DEFA2,DEFB2,AMODE0;-X (ELSE CREF SYMBOL OVERFLOW)
 	./asm6809/src/asm6809 -B src/phr6.src src/defa7.src src/defb6.src src/amode1.src\
 	 		-l bin/defa7-defb6-amode1.lst  -o bin/defa7-defb6-amode1.o
 ```
-This is the main game code with the attract mode module compiled in. `phr6.src` is a file containing definitions,
+This is the main game code with the attract mode module assembled in. `phr6.src` is a file containing definitions,
 while `defa7.src` and `defb6/src` contain the main game code; `amode1.src` contains the attract mode code.
 
 We also have to build a version of this game code without the attract mode module:
@@ -211,7 +211,7 @@ And we assemble `blk71.src` by itself:
 ```
 
 ### ROM Part Table with Corresponding Assembled Object Files
-This table shows how the contents of each ROM chip relates back to the compiled code.
+This table shows how the contents of each ROM chip relates back to the assembled code.
 
 ROM Chip| Part Number|File Name|Build Binary|Start Position in Build Binary|End Position in Build Binary
 | --- | --- | --- | --- | --- | --- |
@@ -237,7 +237,7 @@ Replicating this arrangement of the binaries is achieved by [`ChainFilesToRom.py
 project's [Makefile](Makefile). It's a simple python script that extracts the relevant segments from each of the
 binaries built in the `bin` folder when you run `make redlabel`.
 
-### Changes required for the source to compile
+### Changes required for the source to assemble
 There were a few modifications to the source required along the way to get this to work.
 
 1. Replacing macro arguments to make them compatible `asm6809`,e.g.:
@@ -270,7 +270,7 @@ memory segments. For example both `amode1.src` and `defa7.src` want to assemble 
 the ROM, meaning that one will overwrite the other. This explains why the main game files get assembled
 twice, once with attract mode (`amode1.src`) and once without: they wanted a binary with some segments
 overwritten with attract mode features and one without. We achieve this ourselves by modifying the source
-to compile and place the attract mode code to position `$2000` in memory, and when we later split the
+to assemble and place the attract mode code to position `$2000` in memory, and when we later split the
 object files into the `defend.x` files pick the chunk of code we're interested in:
 ```diff
 @@ -111,6 +111,8 @@ YSHIP   EQU    $5000
@@ -421,7 +421,7 @@ index 33665f5..3f4c5ac 100755
 +        FCC    "LED"
 ```
 
-13. `blk71.src` has to be compiled with 6309 extensions and `STX [,Y]` has to be changed to the `COMF' instruction
+13. `blk71.src` has to be assembled with 6309 extensions and `STX [,Y]` has to be changed to the `COMF' instruction
 in order to get it to match with the ROM binaries.
 
 ```asm
