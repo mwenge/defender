@@ -3,4 +3,4 @@
 	url = https://www.6809.org.uk/git/asm6809.git
 [submodule "vasm-mirror"]
 	path = vasm-mirror
-	url = https://github.com:mbitsnbites/vasm-mirror.git
+	url = https://github.com/mbitsnbites/vasm-mirror.git
