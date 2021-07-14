@@ -77,9 +77,11 @@ sudo apt install mame
 ## Notes on the Source Code, ROM Files, and the Physical Circuit Boards
 
 ### About the source code
-The source code for Defender in [src](src) was originally retrieved from
+The game source code for Defender in [src](src) was originally retrieved from
 https://github.com/historicalsource/defender. It is the Motorola 6809 assembly language
 source code for the 'Red Label' version of the game.
+
+The source code for the [sound module](src/vsndrm1.src) was retrieved from https://github.com/historicalsource/williams-soundroms.
 
 There were four versions of the game released:
 White Label, Blue Label, Green Label, and Red Label, in that order. Each
