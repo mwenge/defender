@@ -55,12 +55,6 @@ cd ..
 
 ### Build Defender
 
-To build the rom image `defender.rom` that is embedded in the [Williams Arcade
-Classics](https://en.wikipedia.org/wiki/Williams_Arcade%27s_Greatest_Hits) release of [`defender.exe`](orig/WilliamsArcadeClassics), do:
-```sh
-make defender.rom
-```
-
 To build the Red Label rom files (see below for more information on what these are), do:
 ```sh
 make redlabel
@@ -69,7 +63,7 @@ These will get written to a directory called `redlabel`.
 
 ## Play Defender
 
-Once you've built defender you can now use the rom files in the `redlabel' directory to play defender on [MAME](https://www.mamedev.org/release.html). If you're on Ubuntu you can also install MAME with apt:
+Once you've built defender you can now use the rom files in the `redlabel` directory to play defender on [MAME](https://www.mamedev.org/release.html). If you're on Ubuntu you can also install MAME with apt:
 ```sh
 sudo apt install mame
 ```

@@ -47,25 +47,6 @@ defender:
 	./vasm-mirror/vasm6800_oldstyle -Fbin -ast -unsshift src/vsndrm1.src\
 	 		-L bin/vsndrm1.lst -o bin/vsndrm1.o
 
-# Recreate the uncompressed ROM images in DEFENDER.EXE
-defender.rom: defender
-	./ChainFilesToRom.py defender.rom 0xffff\
-		bin/defa7-defb6-amode1.o,0x0001,0x8000,0x1000,"amode"\
-		bin/defa7-defb6-amode1.o,0xaeea,0x8ee9,0x0117,"amode tail"\
-		bin/roms.o,0x0001,0x9000,0x0c50,"mess0"\
-		orig/WilliamsArcadeClassics/defender.rom,0x9c51,0x9c50,0x03b0,"rom without source"\
-		bin/roms.o,0xa000,0x9fff,0x1000,"romf8 romc0 romc8"\
-		orig/WilliamsArcadeClassics/defender.rom,0xaff1,0xaff0,0x0010,"16 stray bytes"\
-		bin/blk71.o,0x0001,0xb000,0x1000,"blk71"\
-		orig/WilliamsArcadeClassics/defender.rom,0xb773,0xb772,0x0006,"6 stray bytes"\
-		bin/roms.o,0xa779,0xb778,0x0088,"romc0"\
-		orig/WilliamsArcadeClassics/defender.rom,0xb7f1,0xb7f0,0x0001,"1 stray byte"\
-		orig/WilliamsArcadeClassics/defender.rom,0xc1e1,0xc1e0,0x0e20,"rom without source"\
-		bin/defa7-defb6.o,0x0371,0xd000,0x2c60,"defa7 defb6"\
-		bin/samexap7.o,0x0001,0xfc60,0x02f8,"samexap7"\
-		bin/defa7-defb6.o,0x32c9,0xff58,0x0230,"defa7 defb6 2"
-	echo "e15b3930a1e827bc967a3e84b3be259a  defender.rom" | md5sum -c
-
 # Recreate the binaries in the Red Label ROM board from the objects we assembled in
 # the 'defender' section above. Store them in the 'redlabel' directory.
 #
@@ -121,7 +102,7 @@ redlabel: defender
 	# defend.11
 	./ChainFilesToRom.py redlabel/defend.11 0x0800\
 		bin/roms.o,0x0801,0x0000,0x0800,"roms"\
-		orig/defender-redlabel/defend.11,0x0451,0x0450,0x0800,"roms"
+		src/unknown.bin,0x0001,0x0450,0x0800,"roms"
 	echo "0fda70334d594b58cd26ad032be16c4b  redlabel/defend.11" | md5sum -c
 	# defend.12
 	./ChainFilesToRom.py redlabel/defend.12 0x0800\
