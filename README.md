@@ -26,7 +26,7 @@ to play the game in an emulator such as
 
 ### Build Requirements
 ```sh
-sudo apt install build-essentials wine python3 flex
+sudo apt install build-essential wine python3 flex
 ```
 
 ### Build the assembler toolchain
